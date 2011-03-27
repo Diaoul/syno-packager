@@ -51,7 +51,6 @@ OUT_DIR=$PWD/out
 OUT_DIR_ARCH=$OUT_DIR/$SPK_ARCH
 SPK_DIR=$OUT_DIR_ARCH/spk
 INFO_FILE=$SPK_DIR/INFO
-INSTALL_PREFIX=${INSTALL_PREFIX-"/usr/local"}
 SPK_TEST_ARCH=`grep ^$SPK_ARCH arch-target.map | cut -d: -f5`
 
 mkdir -p $SPK_DIR
@@ -73,7 +72,7 @@ sed -i -e "s/%SPK_ARCH%/$SPK_TEST_ARCH/g" $SPK_DIR/scripts/*
 # Copy target and add all stuff from ROOT
 mkdir -p $SPK_DIR/target
 cp -R src/$SPK_NAME/target/* $SPK_DIR/target
-cp -R $OUT_DIR_ARCH/root$INSTALL_PREFIX/* $SPK_DIR/target
+cp -R $OUT_DIR_ARCH/root/* $SPK_DIR/target
 
 # Create the SPK file name
 SPK_FILENAME=${SPK_NAME}-${SPK_VERSION}-${META_VERSION}-${SPK_ARCH}.spk
