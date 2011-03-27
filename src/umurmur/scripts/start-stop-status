@@ -21,9 +21,14 @@
 UMDIR=/usr/local/umurmur
 UMVAR=$UMDIR/var
 UMLIB=$UMDIR/lib
+UMSHR=$UMDIR/share
 UMETC=$UMDIR/etc
-UMEXE=$UMDIR/bin/umurmurd
+UMBIN=$UMDIR/bin
+UMEXE=$UMBIN/umurmurd
+SUEXE=/bin/su
+PSEXE=ps
 SYNO3APP=/usr/syno/synoman/webman/3rdparty
+UMUSR=root
 
 # Files
 UMCNF=$UMETC/umurmur.conf
@@ -36,13 +41,13 @@ start_daemon ()
 	echo `date`" : Starting uMurmur..." >> $UMLOG
 
 	# Start uMurmur
-	su root -s /bin/sh -c "LD_LIBRARY_PATH=$UMLIB $UMEXE -r -c $UMCNF -p $UMPID >> $UMLOG 2>&1"
+	$SUEXE $UMUSR -s /bin/sh -c "LD_LIBRARY_PATH=$UMLIB $UMEXE -r -c $UMCNF -p $UMPID >> $UMLOG 2>&1"
 
 	# Install the application in the main interface.
 	if [ -d $SYNO3APP ]
 	then
 		rm -f $SYNO3APP/umurmur
-		ln -s $UMDIR/share/3rdparty $SYNO3APP/umurmur
+		ln -s $UMSHR/3rdparty $SYNO3APP/umurmur
 	fi
 }
 
@@ -91,7 +96,7 @@ reload_daemon ()
 
 daemon_status ()
 {
-	[ "`ps aux | grep umurmurd | grep -v grep`" != "" ]
+	[ "`$PSEXE | grep umurmurd | grep -v grep`" != "" ]
 }
 
 
