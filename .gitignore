@@ -5,11 +5,13 @@ ext/precompiled/gcc*.tgz
 ext/libs/*.tgz
 ext/libs/*.tar.gz
 ext/libs/*.tar.bz2
+ext/libs/*.zip
 
 # Binaries #
 ext/exec/*.tgz
 ext/exec/*.tar.gz
 ext/exec/*.tar.bz2
+ext/exec/*.zip
 
 # Outputs #
 out/
