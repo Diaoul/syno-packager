@@ -2,4 +2,4 @@ SPK_DESC="Tranmission bittorrent client that can be controlled through several r
 SPK_MAINT="sarav.devel@gmail.com & diaoulael@users.sourceforge.net"
 SPK_RELOADUI="yes"
 SPK_URL=""
-META_VERSION="0.1"
+META_VERSION="0.2"

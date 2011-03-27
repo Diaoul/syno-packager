@@ -24,6 +24,8 @@ TRLIB=$TRDIR/lib
 TRETC=$TRDIR/etc
 TRUSR=$TRETC/users
 TREXE=$TRDIR/bin/transmission-daemon
+SUEXE=/bin/su
+
 
 start_daemon ()
 {
@@ -44,7 +46,7 @@ start_daemon ()
 	for u in $ulist
 	do
 		echo -ne "\tuser $u..."
-		su $u -s /bin/sh -c "LD_LIBRARY_PATH=$TRLIB $TREXE -x $TRVAR/$u.pid"
+		$SUEXE $u -s /bin/sh -c "LD_LIBRARY_PATH=$TRLIB $TREXE -x $TRVAR/$u.pid"
 		sleep 1
 		echo " Done"
 	done
