@@ -25,12 +25,12 @@ include variables.mk
 
 #######################
 # Light Package Rules #
-#         dev         #
+#       SABnzbd       #
 #######################
 #
 # Package and dependencies definition
-INSTALL_PKG=umurmur
-INSTALL_DEPS=libconfig
+INSTALL_PKG=SABnzbd
+INSTALL_DEPS=Python zlib openssl sqlite par2cmdline coreutils util-linux busybox Markdown Cheetah pyOpenSSL yenc procps
 
 # Cleanup
 KEPT_BINS=python nice renice ionice ps par2% busybox adduser deluser

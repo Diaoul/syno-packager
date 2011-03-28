@@ -25,27 +25,27 @@ include variables.mk
 
 #######################
 # Light Package Rules #
-#         dev         #
+#       umurmur       #
 #######################
 #
 # Package and dependencies definition
 INSTALL_PKG=umurmur
-INSTALL_DEPS=libconfig
+INSTALL_DEPS=libconfig protobuf-c openssl polarssl
 
 # Cleanup
-KEPT_BINS=python nice renice ionice ps par2% busybox adduser deluser
+KEPT_BINS=umurmurd openssl
 DEL_BINS=
-KEPT_LIBS=libcrypto.so% libssl.so% libz.so% libsqlite3.so% python% engines
+KEPT_LIBS=libconfig.so% libprotobuf-c.so% libcrypto.so% libssl.so% libpolarssl.so%
 DEL_LIBS=%.a %.la %.sh pkgconfig
-KEPT_INCS=python%
+KEPT_INCS=
 DEL_INCS=
-KEPT_FOLDERS=bin lib SABnzbd include
+KEPT_FOLDERS=bin lib var
 
 # OpenSSL version used (1.0.0 or 0.9.8)
-OPENSSL_VERSION=1.0.0
+OPENSSL_VERSION=0.9.8
 
 # Optimisation flags
-OFLAGS=-O2
+OFLAGS=-O0
 
 
 ################
