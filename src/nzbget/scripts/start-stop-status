@@ -1,0 +1,105 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+NZBDIR=/usr/local/nzbget
+NZBVAR=$NZBDIR/var
+NZBLIB=$NZBDIR/lib
+NZBETC=$NZBDIR/etc
+NZBEXE=$NZBDIR/bin/nzbget
+SUEXE=/bin/su
+PSEXE=ps
+NZBEXEUSR=nzbduser
+
+# Files
+NZBCNF=$NZBETC/nzbget.conf
+NZBLOG=$NZBVAR/nzbget.log
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting nzbget..." >> $NZBLOG
+
+	# Start nzbget
+	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NZBEXE -c $NZBCNF -D >> $NZBLOG 2>&1"
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping nzbget..." >> $NZBLOG
+
+	# Kill daemon
+	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NZBEXE -c $NZBCNF -Q"
+	sleep 1
+
+	# Wait until nzbget is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || break
+		let counter=counter-1
+		sleep 1
+	done
+}
+
+daemon_status ()
+{
+	[ "`$SUEXE $NZBEXEUSR -s /bin/sh -c \"$PSEXE x | grep $NZBEXE | grep -v grep\"`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "nzbget daemon already running !"
+			exit 0
+		else
+			echo "Starting nzbget daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping nzbget daemon..."
+		stop_daemon
+		exit 0
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $NZBLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

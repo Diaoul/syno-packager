@@ -1,0 +1,5 @@
+SPK_DESC="Command-line based binary newsgrabber for nzb files"
+SPK_MAINT="diaoulael@users.sourceforge.net"
+SPK_RELOADUI="yes"
+SPK_URL="nzbgetweb"
+META_VERSION="0.1"
