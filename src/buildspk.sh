@@ -1,5 +1,6 @@
 #!/bin/sh
-# Copyright 2010 Saravana Kannan & Antoine Bertin
+# Copyright 2010 Saravana Kannan
+# Copyright 2010-2011 Antoine Bertin
 # <sarav dot devel [ignore this] at gmail period com>
 # <diaoulael [ignore this] at users.sourceforge period net>
 #
