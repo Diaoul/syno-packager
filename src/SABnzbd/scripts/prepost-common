@@ -33,12 +33,6 @@ preinst ()
 
 postinst ()
 {
-	# Create SABnzbd specific user
-	adduser sabnzbduser -s /sbin/nologin -G users -D -H
-
-	# Correct the files ownership
-	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
-
 	# Create the view directory
 	mkdir -p /usr/local/SABnzbd
 	mkdir -p /usr/local/bin
@@ -46,15 +40,28 @@ postinst ()
 	# Create symlinks to the installation ditectory
 	ln -s ${SYNOPKG_PKGDEST}/bin /usr/local/SABnzbd/bin
 	ln -s ${SYNOPKG_PKGDEST}/lib /usr/local/SABnzbd/lib
+	ln -s ${SYNOPKG_PKGDEST}/include /usr/local/SABnzbd/include
 	ln -s ${SYNOPKG_PKGDEST}/SABnzbd /usr/local/SABnzbd/SABnzbd
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/SABnzbd/var
 	ln -s ${SYNOPKG_PKGDEST}/etc /usr/local/SABnzbd/etc
 
+	# Create SABnzbd specific user
+	/usr/local/SABnzbd/bin/adduser sabnzbduser -h "/usr/local/SABnzbd/var" -s "/sbin/nologin" -G "users" -D -H
+
+	# Correct the files ownership
+	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
+
 	# Create symlinks
-	for bin in /usr/local/SABnzbd/bin/*
-	do
-		ln -s $bin /usr/local/bin/`basename $bin`
-	done
+	ln -s /usr/local/SABnzbd/bin/cfg.parser /usr/local/bin/cfg.parser
+	ln -s /usr/local/SABnzbd/bin/python /usr/local/bin/python
+	ln -s /usr/local/SABnzbd/bin/nice /usr/local/bin/nice
+	ln -s /usr/local/SABnzbd/bin/renice /usr/local/bin/renice
+	ln -s /usr/local/SABnzbd/bin/ionice /usr/local/bin/ionice
+	ln -s /usr/local/SABnzbd/bin/par2 /usr/local/bin/par2
+	ln -s /usr/local/SABnzbd/bin/ps /usr/local/bin/ps
+	ln -s /usr/local/SABnzbd/bin/par2create /usr/local/bin/par2create
+	ln -s /usr/local/SABnzbd/bin/par2verify /usr/local/bin/par2verify
+	ln -s /usr/local/SABnzbd/bin/par2repair /usr/local/bin/par2repair
 
 	# Correct the files permission
 	chmod 550 /usr/local/SABnzbd/bin/*
@@ -67,32 +74,36 @@ postinst ()
 
 preuninst ()
 {
+	# Remove the user
+	/usr/local/SABnzbd/bin/deluser sabnzbduser
+
 	exit 0
 }
 
 postuninst ()
 {
 	# Remove symlinks
-	for bin in /usr/local/SABnzbd/bin/*
-	do
-		rm -f /usr/local/bin/`basename $bin`
-	done
+	rm -f /usr/local/bin/cfg.parser
+	rm -f /usr/local/bin/python
+	rm -f /usr/local/bin/nice
+	rm -f /usr/local/bin/renice
+	rm -f /usr/local/bin/ionice
+	rm -f /usr/local/bin/par2
+	rm -f /usr/local/bin/ps
+	rm -f /usr/local/bin/par2create
+	rm -f /usr/local/bin/par2verify
+	rm -f /usr/local/bin/par2repair
 
 	# Remove symlinks from /usr/local/SABnzbd
 	rm -f /usr/local/SABnzbd/bin
 	rm -f /usr/local/SABnzbd/lib
+	rm -f /usr/local/SABnzbd/include
 	rm -f /usr/local/SABnzbd/SABnzbd
 	rm -f /usr/local/SABnzbd/var
 	rm -f /usr/local/SABnzbd/etc
 
-	# Remove "share" folder for SABnzbd to find shared files
-	rm -f /usr/local/share/SABnzbd
-
 	# Remove the view directory
 	rmdir /usr/local/SABnzbd
-
-	# Remove the user
-	deluser sabnzbduser
 
 	exit 0
 }
