@@ -17,15 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-# Find the CPU architecture
-synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
-arch=`echo $synoinfo | cut -d_ -f2`
 isUpgrade=/tmp/transmission.upgrade
 SYNO3APP="/usr/syno/synoman/webman/3rdparty"
 TRDIR="/usr/local/transmission"
 
 preinst ()
 {
+	# Find the CPU architecture
+	synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+	arch=`echo $synoinfo | cut -d_ -f2`
+
 	# Check if the architecture is supported
 	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
 		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
