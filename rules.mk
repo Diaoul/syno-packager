@@ -693,6 +693,10 @@ $(OUT_DIR)/busybox/syno.install: $(OUT_DIR)/busybox/syno.config
 	make -C $(dir $@) ARCH=$(ARCH) CROSS_COMPILE=$(TARGET)- CONFIG_PREFIX=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" all install
 	touch $@
 
+
+##############
+# Meta Rules #
+##############
 $(OUT_DIR)/busybox/syno.lightusermanagement: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cp $(EXT_DIR)/others/busybox-lightusermanagement.config $(OUT_DIR)/busybox/.config
