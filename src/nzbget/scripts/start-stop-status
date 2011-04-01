@@ -17,19 +17,31 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-# Common
+# Directories
 NZBDIR=/usr/local/nzbget
 NZBVAR=$NZBDIR/var
 NZBLIB=$NZBDIR/lib
 NZBETC=$NZBDIR/etc
-NZBEXE=$NZBDIR/bin/nzbget
+NZBBIN=$NZBDIR/bin
+NZBSHR=$NZBDIR/share
+NZBDLS=$NZBDIR/downloads
+NZBTMI=$NZBSHR/terminfo
+
+# Binaries
+NZBEXE=$NZBBIN/nzbget
+NICEXE=$NZBBIN/nice
+IONEXE=$NZBBIN/ionice
+ADDUSREXE=$NZBBIN/adduser
+DELUSREXE=$NZBBIN/deluser
 SUEXE=/bin/su
 PSEXE=ps
-NZBEXEUSR=nzbduser
 
 # Files
 NZBCNF=$NZBETC/nzbget.conf
-NZBLOG=$NZBVAR/nzbget.log
+NZBLOG=$NZBVAR/nzbget-spk.log
+
+# User
+NZBEXEUSR=nzbgetuser
 
 start_daemon ()
 {
@@ -37,7 +49,7 @@ start_daemon ()
 	echo `date`" : Starting nzbget..." >> $NZBLOG
 
 	# Start nzbget
-	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NZBEXE -c $NZBCNF -D >> $NZBLOG 2>&1"
+	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NICEXE -n15 $IONEXE -c2 -n4 $NZBEXE -c $NZBCNF -D >> $NZBLOG 2>&1"
 }
 
 stop_daemon ()
@@ -46,7 +58,7 @@ stop_daemon ()
 	echo `date`" : Stoping nzbget..." >> $NZBLOG
 
 	# Kill daemon
-	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NZBEXE -c $NZBCNF -Q"
+	$SUEXE $NZBEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$NZBLIB $NICEXE -n15 $IONEXE -c2 -n4 $NZBEXE -c $NZBCNF -Q"
 	sleep 1
 
 	# Wait until nzbget is really dead (may take some time)
@@ -59,9 +71,18 @@ stop_daemon ()
 	done
 }
 
+launch_client ()
+{
+	# Log
+	echo `date`" : Launching nzbget client..." >> $NZBLOG
+
+	# Open client
+	TERMINFO=$NZBTMI LD_LIBRARY_PATH=$NZBLIB $NICEXE -n15 $IONEXE -c2 -n4 $NZBEXE -c $NZBCNF -C
+}
+
 daemon_status ()
 {
-	[ "`$SUEXE $NZBEXEUSR -s /bin/sh -c \"$PSEXE x | grep $NZBEXE | grep -v grep\"`" != "" ]
+	[ "`$SUEXE $NZBEXEUSR -s /bin/sh -c \"$PSEXE | grep $NZBEXE | grep -v grep\"`" != "" ]
 }
 
 
@@ -94,6 +115,11 @@ case $1 in
 			echo "Not running"
 			exit 1
 		fi
+		;;
+	client)
+		echo "Opening nzbget client..."
+		launch_client
+		exit 0
 		;;
 	log)
 		echo $NZBLOG

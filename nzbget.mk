@@ -30,10 +30,10 @@ include variables.mk
 #
 # Package and dependencies definition
 INSTALL_PKG=nzbget
-INSTALL_DEPS=libpar2 libxml2 libsigc++ openssl zlib nzbgetweb
+INSTALL_DEPS=libpar2 libxml2 libsigc++ openssl zlib nzbgetweb coreutils util-linux
 
 # Cleanup
-KEPT_BINS=nzbget busybox adduser deluser
+KEPT_BINS=nzbget busybox adduser deluser nice ionice
 DEL_BINS=
 KEPT_LIBS=libcrypto.so% libpar2.so% libsigc-2.0.so% libssl.so% libxml2.so% libz.so%
 DEL_LIBS=%.a %.la %.sh

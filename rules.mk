@@ -684,7 +684,6 @@ $(OUT_DIR)/nzbgetweb/syno.install: $(OUT_DIR)/nzbgetweb.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	cp -R $(dir $@) $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	cp $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/nzbgetweb/settings-template.php $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/nzbgetweb/settings.php
 	touch $@
 
 $(OUT_DIR)/busybox/syno.install: $(OUT_DIR)/busybox/syno.config

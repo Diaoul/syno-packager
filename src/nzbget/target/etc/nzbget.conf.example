@@ -24,7 +24,7 @@
 # MAINDIR is a variable and therefore starts with "$".
 # On POSIX you can use "~" as alias for home directory (e.g. "~/download").
 # On Windows use absolute paths (e.g. "C:\Download").
-$MAINDIR=/usr/local/nzbget/downloads
+$MAINDIR=~/download
 
 # Destination-directory to store the downloaded files.
 DestDir=${MAINDIR}/dst
@@ -46,12 +46,12 @@ TempDir=${MAINDIR}/tmp
 #
 # If the option is not empty, nzbget creates the file and writes process-id 
 # (PID) into it. That info can be used in shell scripts.
-LockFile=/usr/local/nzbget/var/nzbget.pid
+LockFile=/tmp/nzbget.lock
 
 # Where to store log file, if it needs to be created.
 #
 # NOTE: See also option <CreateLog>.
-LogFile=/usr/local/nzbget/var/nzbget.log
+LogFile=${DestDir}/nzbget.log
 
 
 ##############################################################################
@@ -137,7 +137,7 @@ DaemonUserName=root
 # command).
 # Empty value or value "1000" disable the setting of umask-mode; current 
 # umask-mode (set via shell) is used in this case.
-UMask=0777
+UMask=1000
 
 
 ##############################################################################
@@ -445,13 +445,13 @@ WarningTarget=both
 InfoTarget=both
 
 # How detail messages must be printed (screen, log, both, none).
-DetailTarget=none
+DetailTarget=both
 
 # How debug messages must be printed (screen, log, both, none).
 #
 # Debug-messages can be printed only if the program was compiled in 
 # debug-mode: "./configure --enable-debug".
-DebugTarget=none
+DebugTarget=both
 
 # Set the default message-kind for output received from process-scripts
 # (PostProcess, NzbProcess, TaskX.Process) (none, detail, info, warning, 
