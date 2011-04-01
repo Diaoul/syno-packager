@@ -595,10 +595,12 @@ $(OUT_DIR)/tcl/syno.install: $(OUT_DIR)/tcl/syno.config
 
 $(OUT_DIR)/coreutils/syno.install: $(OUT_DIR)/coreutils/syno.config
 	@echo $@ ----\> $^
-	make -C $(dir $@)lib
-	make -C $(dir $@)src
-	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
-	cp $(dir $@)src/nice $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
+	cd $(dir $@)man && for f in *.x; \
+	do \
+		touch `basename $$f .x`.1; \
+	done;
+	make -C $(dir $@)
+	make -C $(dir $@) install
 	touch $@
 
 $(OUT_DIR)/util-linux/syno.install: $(OUT_DIR)/util-linux/syno.config
