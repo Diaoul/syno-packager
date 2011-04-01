@@ -399,6 +399,16 @@ $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
 			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	touch $@
 
+$(OUT_DIR)/util-linux/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/util-linux.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" \
+			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	touch $@
+
 $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
@@ -483,18 +493,6 @@ $(OUT_DIR)/par2cmdline/syno.config: $(OUT_DIR)/par2cmdline.unpack precomp/$(ARCH
 	@echo $(shell if [ $(GCC_MAJOR) -eq 4 ]; then \
 			patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/par2cmdline-0.4-gcc4.patch; \
 		fi)
-	touch $@
-
-$(OUT_DIR)/util-linux/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/util-linux.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(dir $@) && \
-	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
-	./configure --host=$(TARGET) --target=$(TARGET) \
-			--build=i686-pc-linux \
-			--disable-gtk --disable-nls \
-			--enable-static --enable-daemon \
-			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
-			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
 $(OUT_DIR)/shadow/syno.config: $(OUT_DIR)/shadow.unpack precomp/$(ARCH)
