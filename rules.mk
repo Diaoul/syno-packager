@@ -289,7 +289,7 @@ $(OUT_DIR)/libxml2/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/libxml2.
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
-$(OUT_DIR)/nzbget/syno.config: $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libpar2/syno.install $(OUT_DIR)/nzbgetweb/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement $(OUT_DIR)/nzbget.unpack precomp/$(ARCH)
+$(OUT_DIR)/nzbget/syno.config: $(OUT_DIR)/ncurses/syno.terminfo $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libpar2/syno.install $(OUT_DIR)/nzbgetweb/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement $(OUT_DIR)/nzbget.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -700,4 +700,10 @@ $(OUT_DIR)/busybox/syno.lightusermanagement: $(OUT_DIR)/busybox.unpack precomp/$
 	@echo $@ ----\> $^
 	cp $(EXT_DIR)/others/busybox-lightusermanagement.config $(OUT_DIR)/busybox/.config
 	make -C $(dir $@) ARCH=$(ARCH) CROSS_COMPILE=$(TARGET)- CONFIG_PREFIX=$(ROOT) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" all install
+	touch $@
+
+$(OUT_DIR)/ncurses/syno.terminfo: $(OUT_DIR)/ncurses/syno.install
+	@echo $@ ----\> $^
+	mkdir -p  $(ROOT)/share/terminfo
+	cp -R $(TEMPROOT)/share/terminfo $(ROOT)/share/terminfo
 	touch $@
