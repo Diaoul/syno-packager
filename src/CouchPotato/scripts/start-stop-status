@@ -33,7 +33,7 @@ SABEXEUSR=sabnzbduser
 # Files
 CPCNF=$CPDIR/CouchPotato/config.ini
 CPPID=$CPVAR/CouchPotato.pid
-CPLOG=$CPVAR/CouchPotato.log
+CPLOG=$CPVAR/CouchPotato-spk.log
 CPINFO=/var/packages/CouchPotato/INFO
 
 start_daemon ()

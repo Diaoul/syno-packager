@@ -32,7 +32,7 @@ SABEXEUSR=sabnzbduser
 
 # Files
 SBCNF=$SBDIR/SickBeard/config.ini
-SBLOG=$SBVAR/SickBeard.log
+SBLOG=$SBVAR/SickBeard-spk.log
 SBINFO=/var/packages/SickBeard/INFO
 
 start_daemon ()
