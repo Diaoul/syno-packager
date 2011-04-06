@@ -59,9 +59,14 @@ out:
 
 check-arch:
 	@echo -n "Checking whether architecture $(ARCH) is supported..."
-	@grep ^$(ARCH): arch-target.map > /dev/null
+ifeq ($(ARCH),all)
+	@echo " yes (all archs)"
+	@echo "$(OUT_DIR)"
+else
+	@grep ^$(ARCH): arch-target.map > /dev/null || (echo " no" && exit 1)
 	@echo " yes"
 	@echo "Target: $(TARGET)"
+endif
 
 archs:
 	@echo "List of supported architectures and models:"

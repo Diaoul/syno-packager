@@ -49,7 +49,11 @@ fi
 
 # Common variables
 OUT_DIR=$PWD/out
-OUT_DIR_ARCH=$OUT_DIR/$SPK_ARCH
+if [ "$SPK_ARCH" = "all" ]; then
+	OUT_DIR_ARCH=$OUT_DIR
+else
+	OUT_DIR_ARCH=$OUT_DIR/$SPK_ARCH
+fi
 SPK_DIR=$OUT_DIR_ARCH/spk
 INFO_FILE=$SPK_DIR/INFO
 SPK_TEST_ARCH=`grep ^$SPK_ARCH arch-target.map | cut -d: -f5`

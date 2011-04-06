@@ -19,7 +19,7 @@
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
 # Default arch
-ARCH=88f5281
+ARCH?=88f5281
 
 # Non-standard package list
 NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl Cheetah Markdown pyOpenSSL psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox yenc protobuf-c
@@ -45,7 +45,12 @@ STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE), $(AVAILABLE_PKGS))
 STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL), $(AVAILABLE_PKGS))
 
 # Declaring directories
-OUT_DIR=out/$(ARCH)
+ifeq ($(ARCH),all)
+	OUT_DIR=out
+else
+	OUT_DIR=out/$(ARCH)
+endif
+
 EXT_DIR=$(PWD)/ext
 CUR_DIR=$(PWD)
 TEMPROOT=$(PWD)/$(OUT_DIR)/temproot
