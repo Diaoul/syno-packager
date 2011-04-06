@@ -32,6 +32,7 @@ SABEXEUSR=sabnzbduser
 
 # Files
 SBCNF=$SBDIR/SickBeard/config.ini
+SBPID=$SBVAR/SickBeard.pid
 SBLOG=$SBVAR/SickBeard-spk.log
 SBINFO=/var/packages/SickBeard/INFO
 
@@ -49,7 +50,7 @@ start_daemon ()
 	sed -i "s/^adminport.*$/adminport=\"$SBPORT\"/g" $SBINFO
 
 	# Start SickBeard
-	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
+	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --pidfile $SBPID --daemon >> $SBLOG 2>&1"
 }
 
 stop_daemon ()
@@ -57,22 +58,9 @@ stop_daemon ()
 	# Log
 	echo `date`" : Stoping SickBeard..." >> $SBLOG
 	
-	# Retrive values from previous configuration file as it may have changed
-	SBPORT=`$PAREXE General web_port $SBCNF`
-	SBHOST=`$PAREXE General web_host $SBCNF`
-	SBUSR=`$PAREXE General web_username $SBCNF`
-	SBPWD=`$PAREXE General web_password $SBCNF`
-
-	# Correct invalid values
-	if [ "$SBHOST" = "0.0.0.0" -o "$SBHOST" = "" ]; then
-		SBHOST="localhost"
-	fi
-
 	# Kill daemon
-	if [ "$SBUSR" = "" -a "$SBPWD" = "" ]; then
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SBHOST:$SBPORT/home/shutdown/'"
-	else
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
+	if [ -f $SBPID ]; then
+		kill `cat $SBPID`
 	fi
 	sleep 1
 
