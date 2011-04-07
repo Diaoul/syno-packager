@@ -1,0 +1,12 @@
+{
+  ".url": {
+    "fr.diaoul.couchpotato": {
+      "title": "CouchPotato",
+      "desc": "Automatic NZB and torrent downloader for movies",
+      "icon": "images/icon_{0}.png",
+      "type": "url",
+      "url": "3rdparty/CouchPotato/index.cgi",
+      "allUsers": true
+    }
+  }
+}
