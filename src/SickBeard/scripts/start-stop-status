@@ -29,6 +29,7 @@ IONEXE=/usr/local/bin/ionice
 PSEXE=/usr/local/bin/ps
 SUEXE=/bin/su
 SABEXEUSR=sabnzbduser
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Files
 SBCNF=$SBDIR/SickBeard/config.ini
@@ -51,6 +52,13 @@ start_daemon ()
 
 	# Start SickBeard
 	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --pidfile $SBPID --daemon >> $SBLOG 2>&1"
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/SickBeard
+		ln -s $UMSHR/3rdparty $SYNO3APP/SickBeard
+	fi
 }
 
 stop_daemon ()
@@ -72,6 +80,12 @@ stop_daemon ()
 		let counter=counter-1
 		sleep 1
 	done
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/SickBeard ]
+	then
+		rm -f $SYNO3APP/SickBeard
+	fi
 }
 
 daemon_status ()
