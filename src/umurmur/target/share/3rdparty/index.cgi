@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
 use strict;
 use warnings;
 use CGI;
@@ -29,21 +30,11 @@ my $q = CGI->new;
 
 # Controller
 if (&isAuthed()) {
-	print $q->redirect("mumble://".$ENV{SERVER_ADDR}."/?version=1.2.2");
+	print $q->redirect("mumble://".$ENV{SERVER_NAME}."/?version=1.2.3");
 } else {
 	print $q->header;
-	
-	# Get the browser language
-	my %languages = split(/[,;]/, $ENV{HTTP_ACCEPT_LANGUAGE});
-	
-	# Print specific content
-	if (exists($languages{"fr"}) || exists($languages{"fr-FR"}) || exists($languages{"fr-fr"})) {
-		print $q->start_html("uMurmur - Authentification requise");
-		print $q->h4("Veuillez vous connecter au DSM pour continuer...");
-	} else {
-		print $q->start_html("uMurmur - Authentication required");
-		print $q->h4("Please connect to DSM to continue...");
-	}
+	print $q->start_html("uMurmur - Authentication required");
+	print $q->h4("Please connect to DSM to continue...");
 	print $q->end_html;
 }
 

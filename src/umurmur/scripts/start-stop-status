@@ -79,7 +79,7 @@ stop_daemon ()
 	# Remove the application from the main interface if it was previously added.
 	if [ -h $SYNO3APP/umurmur ]
 	then
-		rm $SYNO3APP/umurmur
+		rm -f $SYNO3APP/umurmur
 	fi
 }
 
