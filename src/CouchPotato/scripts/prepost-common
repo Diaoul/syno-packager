@@ -39,6 +39,7 @@ postinst ()
 	# Create symlinks to the installation ditectory
 	ln -s ${SYNOPKG_PKGDEST}/CouchPotato /usr/local/CouchPotato/CouchPotato
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/CouchPotato/var
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/CouchPotato/share
 
 	# Correct the files permission
 	chmod 770 /usr/local/CouchPotato/var/*
@@ -56,6 +57,7 @@ postuninst ()
 	# Remove symlinks
 	rm -f /usr/local/CouchPotato/CouchPotato
 	rm -f /usr/local/CouchPotato/var
+	rm -f /usr/local/CouchPotato/share
 
 	# Remove the view directory
 	rmdir /usr/local/CouchPotato

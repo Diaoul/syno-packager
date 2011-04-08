@@ -20,6 +20,7 @@
 # Common
 SBDIR=/usr/local/SickBeard
 SBVAR=$SBDIR/var
+SBSHR=$SBDIR/share
 SABLIB=/usr/local/SABnzbd/lib
 SBEXE=$SBDIR/SickBeard/SickBeard.py
 PYEXE=/usr/local/bin/python
@@ -57,7 +58,7 @@ start_daemon ()
 	if [ -d $SYNO3APP ]
 	then
 		rm -f $SYNO3APP/SickBeard
-		ln -s $UMSHR/3rdparty $SYNO3APP/SickBeard
+		ln -s $SBSHR/3rdparty $SYNO3APP/SickBeard
 	fi
 }
 

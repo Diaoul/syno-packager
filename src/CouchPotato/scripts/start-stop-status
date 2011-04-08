@@ -20,6 +20,7 @@
 # Common
 CPDIR=/usr/local/CouchPotato
 CPVAR=$CPDIR/var
+CPSHR=$CPDIR/share
 SABLIB=/usr/local/SABnzbd/lib
 CPEXE=$CPDIR/CouchPotato/CouchPotato.py
 PYEXE=/usr/local/bin/python
@@ -57,7 +58,7 @@ start_daemon ()
 	if [ -d $SYNO3APP ]
 	then
 		rm -f $SYNO3APP/CouchPotato
-		ln -s $UMSHR/3rdparty $SYNO3APP/CouchPotato
+		ln -s $CPSHR/3rdparty $SYNO3APP/CouchPotato
 	fi
 }
 

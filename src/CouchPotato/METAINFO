@@ -1,4 +1,4 @@
-SPK_DESC="Automatic Movie Downloading via NZBs & Torrents"
+SPK_DESC="Automatic NZB and torrent downloader for movies"
 SPK_MAINT="diaoulael@users.sourceforge.net"
 SPK_RELOADUI="yes"
 SPK_URL=""

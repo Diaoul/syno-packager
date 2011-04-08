@@ -39,6 +39,7 @@ postinst ()
 	# Create symlinks to the installation ditectory
 	ln -s ${SYNOPKG_PKGDEST}/SickBeard /usr/local/SickBeard/SickBeard
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/SickBeard/var
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/SickBeard/share
 
 	# Correct the files permission
 	chmod 770 /usr/local/SickBeard/var/*
@@ -56,6 +57,7 @@ postuninst ()
 	# Remove symlinks
 	rm -f /usr/local/SickBeard/SickBeard
 	rm -f /usr/local/SickBeard/var
+	rm -f /usr/local/SickBeard/share
 
 	# Remove the view directory
 	rmdir /usr/local/SickBeard

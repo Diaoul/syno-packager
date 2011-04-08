@@ -1,4 +1,4 @@
-SPK_DESC="The ultimate PVR application that downloads and manages your TV shows"
+SPK_DESC="Automatic NZB and torrent downloader for TV shows"
 SPK_MAINT="diaoulael@users.sourceforge.net"
 SPK_RELOADUI="yes"
 SPK_URL=""
