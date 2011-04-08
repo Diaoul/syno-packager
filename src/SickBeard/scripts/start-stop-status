@@ -52,7 +52,7 @@ start_daemon ()
 	sed -i "s/^adminport.*$/adminport=\"$SBPORT\"/g" $SBINFO
 
 	# Start SickBeard
-	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --pidfile $SBPID --daemon >> $SBLOG 2>&1"
+	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --daemon --pidfile $SBPID >> $SBLOG 2>&1"
 
 	# Install the application in the main interface.
 	if [ -d $SYNO3APP ]
