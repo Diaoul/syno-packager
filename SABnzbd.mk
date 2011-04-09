@@ -30,12 +30,12 @@ include variables.mk
 #
 # Package and dependencies definition
 INSTALL_PKG=SABnzbd
-INSTALL_DEPS=Python zlib openssl sqlite par2cmdline coreutils util-linux busybox Markdown Cheetah pyOpenSSL yenc procps
+INSTALL_DEPS=Python zlib openssl sqlite par2cmdline coreutils util-linux busybox Markdown Cheetah pyOpenSSL yenc procps Config-IniFiles
 
 # Cleanup
 KEPT_BINS=python nice renice ionice ps par2% busybox adduser deluser
 DEL_BINS=
-KEPT_LIBS=libcrypto.so% libssl.so% libz.so% libsqlite3.so% python% engines
+KEPT_LIBS=libcrypto.so% libssl.so% libz.so% libsqlite3.so% python% engines perl5
 DEL_LIBS=%.a %.la %.sh pkgconfig
 KEPT_INCS=python%
 DEL_INCS=

@@ -1,0 +1,12 @@
+{
+  ".url": {
+    "fr.diaoul.sabnzbd": {
+      "title": "SABnzbd",
+      "desc": "Open Source Binary Newsreader written in Python",
+      "icon": "images/icon_{0}.png",
+      "type": "url",
+      "url": "3rdparty/SABnzbd/index.cgi",
+      "allUsers": true
+    }
+  }
+}

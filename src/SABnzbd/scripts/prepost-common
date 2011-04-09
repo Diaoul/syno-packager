@@ -44,6 +44,7 @@ postinst ()
 	ln -s ${SYNOPKG_PKGDEST}/SABnzbd /usr/local/SABnzbd/SABnzbd
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/SABnzbd/var
 	ln -s ${SYNOPKG_PKGDEST}/etc /usr/local/SABnzbd/etc
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/SABnzbd/share
 
 	# Create SABnzbd specific user
 	/usr/local/SABnzbd/bin/adduser sabnzbduser -h "/usr/local/SABnzbd/var" -s "/sbin/nologin" -G "users" -D -H
@@ -101,6 +102,7 @@ postuninst ()
 	rm -f /usr/local/SABnzbd/SABnzbd
 	rm -f /usr/local/SABnzbd/var
 	rm -f /usr/local/SABnzbd/etc
+	rm -f /usr/local/SABnzbd/share
 
 	# Remove the view directory
 	rmdir /usr/local/SABnzbd
