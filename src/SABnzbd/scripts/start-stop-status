@@ -36,6 +36,7 @@ SYNO3APP=/usr/syno/synoman/webman/3rdparty
 # Files
 SABCNF=$SABETC/config.ini
 SABLOG=$SABVAR/SABnzbd-spk.log
+SABOLDCNF=$SABVAR/config.ini.old
 SABINFO=/var/packages/SABnzbd/INFO
 
 start_daemon ()
@@ -50,6 +51,9 @@ start_daemon ()
 
 	# Update port in INFO file
 	sed -i "s/^adminport.*$/adminport=\"$SABPORT\"/g" $SABINFO
+
+	# Save config for later use
+	cp $SABCNF $SABOLDCNF
 
 	# Start SABnzbd
 	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SABEXE -f $SABCNF -d >> $SABLOG 2>&1"
@@ -66,8 +70,46 @@ stop_daemon ()
 {
 	# Log
 	echo `date`" : Stoping SABnzbd..." >> $SABLOG
-	
-	# Retrive values from previous configuration file as it may have changed
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/SABnzbd ]
+	then
+		rm -f $SYNO3APP/SABnzbd
+	fi
+
+	# Retrieve values from previous configuration file as it may have changed
+	SABPORT=`$PAREXE misc port $SABOLDCNF`
+	SABHOST=`$PAREXE misc host $SABOLDCNF`
+	SABUSR=`$PAREXE misc username $SABOLDCNF`
+	SABPWD=`$PAREXE misc password $SABOLDCNF`
+	SABAPIKEY=`$PAREXE misc api_key $SABOLDCNF`
+
+	# Correct invalid values
+	if [ "$SABHOST" = "0.0.0.0" ]; then
+		SABHOST="localhost"
+	fi
+	if [ "$SABAPIKEY" = "" ]; then
+		SABAPIKEY=`$PAREXE misc api_key $SABCNF`
+	fi
+
+	# Kill daemon
+	if [ "$SABUSR" = "" -a "$SABPWD" = "" ]; then
+		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&apikey=$SABAPIKEY'"
+	else
+		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&ma_username=$SABUSR&ma_password=$SABPWD&apikey=$SABAPIKEY'"
+	fi
+	sleep 1
+
+	# Wait until SABnzbd is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || exit 0
+		let counter=counter-1
+		sleep 1
+	done
+
+	# If we fail, try with new config file as user may have restarted SABnzbd manually
 	SABPORT=`$PAREXE misc port $SABCNF`
 	SABHOST=`$PAREXE misc host $SABCNF`
 	SABUSR=`$PAREXE misc username $SABCNF`
@@ -91,16 +133,11 @@ stop_daemon ()
 	counter=20
 	while [ $counter -gt 0 ] 
 	do
-		daemon_status || break
+		daemon_status || exit 0
 		let counter=counter-1
 		sleep 1
 	done
-
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/SABnzbd ]
-	then
-		rm -f $SYNO3APP/SABnzbd
-	fi
+	exit 1	
 }
 
 daemon_status ()
