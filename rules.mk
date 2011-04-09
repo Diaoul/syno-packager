@@ -112,6 +112,11 @@ tests: gcc-version
 	@echo "	CFLAGS				$(CFLAGS)"
 	@echo "	CPPFLAGS			$(CPPFLAGS)"
 	@echo "	LDFLAGS				$(LDFLAGS)"
+	@echo ""
+	@echo "SPK Informations :"
+	@echo "	SPK_NAME			$(SPK_NAME)"
+	@echo "	SPK_VERSION			$(SPK_VERSION)"
+	@echo "	SPK_ARCH			$(SPK_ARCH)"
 
 help:
 	@echo ""
