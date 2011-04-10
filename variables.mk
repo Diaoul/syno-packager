@@ -79,5 +79,9 @@ SPK_NAME=$(INSTALL_PKG)
 SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*.*)) | perl -p -e 's/^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$/\3/; s/^\s*$$/tip/')
 SPK_ARCH="$(ARCH)"
 
+# Build types
+BUILD_TYPES=release dev
+BUILD_TYPE=release
+
 # First called Makefile
 TOP_MK=$(firstword $(MAKEFILE_LIST))

@@ -32,11 +32,11 @@ buildall: cleanstatus $(ARCHS)
 	@echo "Building all in background, use 'tail -f out/logs/status.log' to monitor building status in realtime"
 
 $(ARCHS): out
-	@echo "Making $(INSTALL_PKG)'s SPK for arch $@..." && \
+	@echo "Making SPK $(INSTALL_PKG) version $(SPK_VERSION) for arch $@ type $(BUILD_TYPE)..." && \
 	mkdir -p out/logs && \
-	nice $(MAKE) -f $(TOP_MK) ARCH=$@ all packagecleaner spk zip > out/logs/$@.log 2>&1 && \
-	echo "$(INSTALL_PKG)'s SPK for arch $@ built successfully" >> out/logs/status.log || \
-	echo "Error while building $(INSTALL_PKG)'s SPK for arch $@, check logs for more details" >> out/logs/status.log &
+	nice $(MAKE) -f $(TOP_MK) ARCH=$@ $(BUILD_TYPE) > out/logs/$@.log 2>&1 && \
+	echo "SPK $(INSTALL_PKG) for arch $@ type $(BUILD_TYPE) built successfully" >> out/logs/status.log || \
+	echo "Error while building SPK $(INSTALL_PKG) for arch $@ type $(BUILD_TYPE), check logs for more details" >> out/logs/status.log &
 
 spk:
 	@echo -n "Making SPK $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
@@ -205,6 +205,15 @@ spkstripper:
 		echo -n "Stripping `basename $$f`..."; \
 		$(TARGET)-strip $$f && echo " ok" || echo " failed!"; \
 	done;
+
+# Pre defined build types
+bt-release: clean all spkcleaner spkperms spkstripper spk zip
+
+$(BUILD_TYPES:%=imp-%):imp-%:
+	$(eval BUILD_TYPE=bt-$*)
+
+release: imp-release
+	@echo $(BUILD_TYPE)
 
 
 ##################
