@@ -80,9 +80,11 @@ stop_daemon ()
 	# Retrieve values from previous configuration file as it may have changed
 	SABPORT=`$PAREXE misc port $SABOLDCNF`
 	SABHOST=`$PAREXE misc host $SABOLDCNF`
-	SABUSR=`$PAREXE misc username $SABOLDCNF`
-	SABPWD=`$PAREXE misc password $SABOLDCNF`
-	SABAPIKEY=`$PAREXE misc api_key $SABOLDCNF`
+
+	# Retrieve values from current configuration file for changes that don't need a restart to take effect
+	SABUSR=`$PAREXE misc username $SABCNF`
+	SABPWD=`$PAREXE misc password $SABCNF`
+	SABAPIKEY=`$PAREXE misc api_key $SABCNF`
 
 	# Correct invalid values
 	if [ "$SABHOST" = "0.0.0.0" ]; then
@@ -112,9 +114,6 @@ stop_daemon ()
 	# If we fail, try with new config file as user may have restarted SABnzbd manually
 	SABPORT=`$PAREXE misc port $SABCNF`
 	SABHOST=`$PAREXE misc host $SABCNF`
-	SABUSR=`$PAREXE misc username $SABCNF`
-	SABPWD=`$PAREXE misc password $SABCNF`
-	SABAPIKEY=`$PAREXE misc api_key $SABCNF`
 
 	# Correct invalid values
 	if [ "$SABHOST" = "0.0.0.0" ]; then
