@@ -23,7 +23,7 @@
 ##################
 #
 all: out check-arch $(INSTALL_PKG)
-	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
+	@echo "$(if $(strip $^),Done,Run \"make help\" to get help info)."
 	@echo
 
 buildall: cleanstatus $(ARCHS)
@@ -43,15 +43,15 @@ spk:
 	@rm -rf $(OUT_DIR)/spk
 	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
 	./src/buildspk.sh
-	@echo " Done"
+	@echo " ok"
 
 $(MODELS):
 	$(MAKE) -f $(TOP_MK) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 hash:
-	@echo "SHA1SUM:"
+	@echo "SHA1:"
 	@cd out && sha1sum *.spk
-	@echo "MD5SUM:"
+	@echo "MD5:"
 	@cd out && md5sum *.spk
 
 out:
@@ -149,12 +149,13 @@ help:
 	@echo "  out/<arch>/<pkg>/syno.install	Make and install <pkg> for <arch>"
 	@echo ""
 
-unpack: precomp/$(ARCH) $(PKG_DESTS)
+unpack: precomp/$(ARCH)
 
 gcc-version: precomp/$(ARCH)
 	$(eval GCC_VERSION:=$(shell $(CC_PATH)/bin/$(TARGET)-gcc --version | head -1 | awk -F" " '{ printf $$3 }'))
 	$(eval GCC_MAJOR:=$(shell echo $(GCC_VERSION) | awk -F"." '{ printf $$1}'))
 
+# Cleaning rules
 clean:
 	rm -rf $(OUT_DIR)
 
@@ -167,20 +168,43 @@ cleanall:
 realclean: cleanall
 	rm -rf precomp
 
-zip:
-	find out/  -maxdepth 1 -name "*.spk" -a -name "*$(ARCH)*" -a -name "*$(INSTALL_PKG)*" -exec zip '{}'.zip '{}' \;
+# Zip rules
+$(ARCHS:%=%.zip): out
+	@cd out/ && find . -maxdepth 1 -name "*.spk" -a -name "*$(patsubst %.zip,%,$@)*" -a -name "*$(INSTALL_PKG)*" -exec zip '{}'.zip '{}' \;
 
-zipall:
-	find out/  -maxdepth 1 -name "*.spk" -exec zip '{}'.zip '{}' \;
+zip: $(ARCH:%=%.zip)
 
-packagecleaner:
-	@[ ! -e $(ROOT)/bin/ ] || cd $(ROOT)/bin/ && rm -rf $(filter-out $(KEPT_BINS), $(notdir $(wildcard $(ROOT)/bin/*)))
-	@[ ! -e $(ROOT)/bin/ ] || cd $(ROOT)/bin/ && rm -rf $(filter $(DEL_BINS), $(notdir $(wildcard $(ROOT)/bin/*)))
-	@[ ! -e $(ROOT)/lib/ ] || cd $(ROOT)/lib/ && rm -rf  $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*)))
-	@[ ! -e $(ROOT)/lib/ ] || cd $(ROOT)/lib/ && rm -rf  $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*)))
-	@[ ! -e $(ROOT)/include/ ] || cd $(ROOT)/include/ && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*)))
-	@[ ! -e $(ROOT)/include/ ] || cd $(ROOT)/include/ && rm -rf $(filter $(DEL_INCS), $(notdir $(wildcard $(ROOT)/include/*)))
-	@[ ! -e $(ROOT)/ ] || cd $(ROOT) && rm -rf $(filter-out $(KEPT_FOLDERS), $(notdir $(wildcard $(ROOT)/*)))
+zipall: $(ARCHS:%=%.zip)
+
+# Package Cleaner
+spkcleaner:
+	@echo -n "Removing binaries not in KEPT_BINS... "
+	@cd $(ROOT)/bin/ && rm -rf $(filter-out $(KEPT_BINS), $(notdir $(wildcard $(ROOT)/bin/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing binaries in DEL_BINS... "
+	@cd $(ROOT)/bin/ && rm -rf $(filter $(DEL_BINS), $(notdir $(wildcard $(ROOT)/bin/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing libraries not in KEPT_LIBS... "
+	@cd $(ROOT)/lib/ && rm -rf  $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing libraries in DEL_LIBS... "
+	@cd $(ROOT)/lib/ && rm -rf  $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing includes not in KEPT_INCS... "
+	@cd $(ROOT)/include/ && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing includes in DEL_INCS... "
+	@cd $(ROOT)/include/ && rm -rf $(filter $(DEL_INCS), $(notdir $(wildcard $(ROOT)/include/*))) && echo " ok" || echo " failed!"
+	@echo -n "Removing folders not in KEPT_FOLDERS... "
+	@cd $(ROOT) && rm -rf $(filter-out $(KEPT_FOLDERS), $(notdir $(wildcard $(ROOT)/*))) && echo " ok" || echo " failed!"
+
+# Package Permissions
+spkperms:
+	@echo -n "Setting full permissions for root directory..."
+	@chmod -R 777 $(ROOT)/* && echo " ok" || echo " failed!"
+
+# Package Stripper
+spkstripper:
+	@for f in $(ROOT)/bin/*; \
+	do \
+		echo -n "Stripping `basename $$f`..."; \
+		$(TARGET)-strip $$f && echo " ok" || echo " failed!"; \
+	done;
 
 
 ##################
