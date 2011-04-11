@@ -52,10 +52,10 @@ else
 	OUT_DIR=out/$(ARCH)
 endif
 
-EXT_DIR=$(PWD)/ext
-CUR_DIR=$(PWD)
-TEMPROOT=$(PWD)/$(OUT_DIR)/temproot
-ROOT=$(PWD)/$(OUT_DIR)/root
+CUR_DIR:=$(PWD)
+EXT_DIR=$(CUR_DIR)/ext
+TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
+ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 
 # Environment variables common to all package compilation
 ifeq ($(ARCH),88f628x)
@@ -64,11 +64,11 @@ endif
 ifeq ($(ARCH),88f5281)
 	EXTRA_ARM_CFLAGS=-mfloat-abi=soft
 endif
-PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
-PKG_CONFIG_PATH:=$(ROOT)/lib/pkgconfig:$(TEMPROOT)/lib/pkgconfig
-CFLAGS=$(OFLAGS) -I$(TEMPROOT)/include -I$(ROOT)/include $(EXTRA_ARM_CFLAGS)# -I$(PWD)/$(CC_PATH)/include
+PATH:=$(CUR_DIR)/$(CC_PATH)/bin:$(PATH)
+PKG_CONFIG_PATH=$(ROOT)/lib/pkgconfig:$(TEMPROOT)/lib/pkgconfig
+CFLAGS=$(OFLAGS) -I$(TEMPROOT)/include -I$(ROOT)/include $(EXTRA_ARM_CFLAGS)# -I$(CUR_DIR)/$(CC_PATH)/include
 CPPFLAGS=$(CFLAGS)
-LDFLAGS=-Wl,-rpath-link,$(ROOT)/lib -Wl,-rpath-link,$(TEMPROOT)/lib -Wl,-rpath,/usr/local/$(INSTALL_PKG)/lib -L$(TEMPROOT)/lib -L$(ROOT)/lib# -L$(PWD)/$(CC_PATH)/lib
+LDFLAGS=-Wl,-rpath-link,$(ROOT)/lib -Wl,-rpath-link,$(TEMPROOT)/lib -Wl,-rpath,/usr/local/$(INSTALL_PKG)/lib -L$(TEMPROOT)/lib -L$(ROOT)/lib# -L$(CUR_DIR)/$(CC_PATH)/lib
 
 # Variables used to check for bugged config.h and syno.h
 SYNO_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)/include/linux/syno.h
@@ -78,6 +78,9 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 SPK_NAME=$(INSTALL_PKG)
 SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*.*)) | perl -p -e 's/^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$/\3/; s/^\s*$$/tip/')
 SPK_ARCH="$(ARCH)"
+
+# Build types
+BUILD_TYPES=release build zip spk-clean spk-perms spk-strip
 
 # First called Makefile
 TOP_MK=$(firstword $(MAKEFILE_LIST))

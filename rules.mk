@@ -23,35 +23,29 @@
 ##################
 #
 all: out check-arch $(INSTALL_PKG)
-	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
-	@echo
-
-buildall: cleanstatus $(ARCHS)
-	@mkdir -p out/logs/
-	@touch out/logs/status.log
-	@echo "Building all in background, use 'tail -f out/logs/status.log' to monitor building status in realtime"
+	@echo "$(if $(strip $^),done,Run \"make help\" to get help info)."
 
 $(ARCHS): out
-	@echo "Making $(INSTALL_PKG)'s SPK for arch $@..." && \
-	mkdir -p out/logs && \
-	nice $(MAKE) -f $(TOP_MK) ARCH=$@ all packagecleaner spk zip > out/logs/$@.log 2>&1 && \
-	echo "$(INSTALL_PKG)'s SPK for arch $@ built successfully" >> out/logs/status.log || \
-	echo "Error while building $(INSTALL_PKG)'s SPK for arch $@, check logs for more details" >> out/logs/status.log &
+	@echo "Making SPK $(INSTALL_PKG) version $(SPK_VERSION) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE))..."
+	@mkdir -p out/logs
+	@nice $(MAKE) -f $(TOP_MK) ARCH=$@ $(BUILD_TYPE) > out/logs/$@.log 2>&1 && \
+	echo "SPK $(INSTALL_PKG) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE)) built successfully" >> out/logs/status.log || \
+	echo "Error while building SPK $(INSTALL_PKG) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE)), check logs for more details" >> out/logs/status.log &
 
 spk:
 	@echo -n "Making SPK $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
 	@rm -rf $(OUT_DIR)/spk
 	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
 	./src/buildspk.sh
-	@echo " Done"
+	@echo " ok"
 
 $(MODELS):
 	$(MAKE) -f $(TOP_MK) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 hash:
-	@echo "SHA1SUM:"
+	@echo "SHA1:"
 	@cd out && sha1sum *.spk
-	@echo "MD5SUM:"
+	@echo "MD5:"
 	@cd out && md5sum *.spk
 
 out:
@@ -149,12 +143,13 @@ help:
 	@echo "  out/<arch>/<pkg>/syno.install	Make and install <pkg> for <arch>"
 	@echo ""
 
-unpack: precomp/$(ARCH) $(PKG_DESTS)
+unpack: precomp/$(ARCH)
 
 gcc-version: precomp/$(ARCH)
 	$(eval GCC_VERSION:=$(shell $(CC_PATH)/bin/$(TARGET)-gcc --version | head -1 | awk -F" " '{ printf $$3 }'))
 	$(eval GCC_MAJOR:=$(shell echo $(GCC_VERSION) | awk -F"." '{ printf $$1}'))
 
+# Cleaning rules
 clean:
 	rm -rf $(OUT_DIR)
 
@@ -167,20 +162,58 @@ cleanall:
 realclean: cleanall
 	rm -rf precomp
 
-zip:
-	find out/  -maxdepth 1 -name "*.spk" -a -name "*$(ARCH)*" -a -name "*$(INSTALL_PKG)*" -exec zip '{}'.zip '{}' \;
+# Zip rules
+$(ARCHS:%=%.zip): out
+	@cd out/ && find . -maxdepth 1 -name "*.spk" -a -name "*$(patsubst %.zip,%,$@)*" -a -name "*$(INSTALL_PKG)*" -exec zip '{}'.zip '{}' \;
 
-zipall:
-	find out/  -maxdepth 1 -name "*.spk" -exec zip '{}'.zip '{}' \;
+zip: $(ARCH:%=%.zip)
 
-packagecleaner:
-	@[ ! -e $(ROOT)/bin/ ] || cd $(ROOT)/bin/ && rm -rf $(filter-out $(KEPT_BINS), $(notdir $(wildcard $(ROOT)/bin/*)))
-	@[ ! -e $(ROOT)/bin/ ] || cd $(ROOT)/bin/ && rm -rf $(filter $(DEL_BINS), $(notdir $(wildcard $(ROOT)/bin/*)))
-	@[ ! -e $(ROOT)/lib/ ] || cd $(ROOT)/lib/ && rm -rf  $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*)))
-	@[ ! -e $(ROOT)/lib/ ] || cd $(ROOT)/lib/ && rm -rf  $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*)))
-	@[ ! -e $(ROOT)/include/ ] || cd $(ROOT)/include/ && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*)))
-	@[ ! -e $(ROOT)/include/ ] || cd $(ROOT)/include/ && rm -rf $(filter $(DEL_INCS), $(notdir $(wildcard $(ROOT)/include/*)))
-	@[ ! -e $(ROOT)/ ] || cd $(ROOT) && rm -rf $(filter-out $(KEPT_FOLDERS), $(notdir $(wildcard $(ROOT)/*)))
+# Package Cleaner
+spk-clean:
+	@echo -n "Removing binaries not in KEPT_BINS... "
+	@cd $(ROOT)/bin/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_BINS), $(notdir $(wildcard $(ROOT)/bin/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing binaries in DEL_BINS... "
+	@cd $(ROOT)/bin/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_BINS), $(notdir $(wildcard $(ROOT)/bin/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing libraries not in KEPT_LIBS... "
+	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf  $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing libraries in DEL_LIBS... "
+	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf  $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing includes not in KEPT_INCS... "
+	@cd $(ROOT)/include/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing includes in DEL_INCS... "
+	@cd $(ROOT)/include/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_INCS), $(notdir $(wildcard $(ROOT)/include/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing folders not in KEPT_FOLDERS... "
+	@cd $(ROOT) > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_FOLDERS), $(notdir $(wildcard $(ROOT)/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+
+# Package Permissions
+spk-perms:
+	@echo -n "Setting full permissions for root directory..."
+	@chmod -R 777 $(ROOT)/* > /dev/null 2>&1 && echo " ok" || echo " failed!"
+
+# Package Stripper
+spk-strip:
+	@[ "$$(ls -A $(ROOT)/bin)" ] && for f in $(ROOT)/bin/*; \
+	do \
+		echo -n "Stripping `basename $$f`..."; \
+		$(TARGET)-strip $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
+	done || echo "Nothing to strip"
+
+# Pre defined build types
+bt-release: clean all spk-clean spk-perms spk-strip spk zip
+bt-buildall: all
+bt-spk-cleanall: spk-clean
+bt-spk-permsall: spk-perms
+bt-spk-stripall: spk-strip
+bt-zipall: zip
+
+# Implicit rule to define BUILD_TYPE
+$(BUILD_TYPES:%=imp-%):imp-%:
+	$(eval BUILD_TYPE=bt-$*)
+
+# Related targets
+$(BUILD_TYPES:%=%all):%all: imp-% $(ARCHS)
+
+release: realclean releaseall
 
 
 ##################
