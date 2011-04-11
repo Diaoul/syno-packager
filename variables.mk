@@ -80,8 +80,7 @@ SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*.*)) | perl -p
 SPK_ARCH="$(ARCH)"
 
 # Build types
-BUILD_TYPES=release dev
-BUILD_TYPE=release
+BUILD_TYPES=release build zip spk-clean spk-perms spk-strip
 
 # First called Makefile
 TOP_MK=$(firstword $(MAKEFILE_LIST))
