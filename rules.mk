@@ -218,7 +218,7 @@ $(BUILD_TYPES:%=imp-%):imp-%:
 # Related targets
 $(BUILD_TYPES:%=%all):%all: imp-% $(ARCHS)
 
-release: realclean releaseall
+release: bt-release
 
 
 ##################
