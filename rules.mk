@@ -197,7 +197,7 @@ spk-perms:
 
 # Package Stripper
 spk-strip:
-	@[ "$$(ls -A $(ROOT)/bin)" ] && for f in $(ROOT)/bin/*; \
+	@ls -A $(ROOT)/bin > /dev/null 2>&1 && for f in $(ROOT)/bin/*; \
 	do \
 		echo -n "Stripping `basename $$f`..."; \
 		$(TARGET)-strip $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
