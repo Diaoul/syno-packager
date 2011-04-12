@@ -43,11 +43,16 @@ $(MODELS):
 	$(MAKE) -f $(TOP_MK) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 hash:
-	@echo "SHA1:"
-	@cd out && sha1sum *.spk
-	@echo "MD5:"
-	@cd out && md5sum *.spk
-
+	@rm -f out/*.hashs
+	@for f in out/*.*; \
+	do \
+		echo ""; \
+		echo "`basename $$f`:"; \
+		echo "MD5: `md5sum $$f | awk '{ print $$1 }'`"; \
+		echo "SHA1: `sha1sum $$f | awk '{ print $$1 }'`"; \
+		echo "MD5: `md5sum $$f | awk '{ print $$1 }'`" > out/`basename $$f`.hashs; \
+		echo "SHA1: `sha1sum $$f | awk '{ print $$1 }'`" >> out/`basename $$f`.hashs; \
+	done
 out:
 	@mkdir -p out
 
@@ -199,7 +204,7 @@ spk-strip:
 	done || echo "Nothing to strip"
 
 # Pre defined build types
-bt-release: clean all spk-clean spk-perms spk-strip spk zip
+bt-release: clean all spk-clean spk-perms spk-strip spk
 bt-buildall: all
 bt-spk-cleanall: spk-clean
 bt-spk-permsall: spk-perms
