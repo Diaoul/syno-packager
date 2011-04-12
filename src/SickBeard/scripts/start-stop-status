@@ -66,10 +66,18 @@ stop_daemon ()
 {
 	# Log
 	echo `date`" : Stoping SickBeard..." >> $SBLOG
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/SickBeard ]
+	then
+		rm -f $SYNO3APP/SickBeard
+	fi
 	
 	# Kill daemon
 	if [ -f $SBPID ]; then
 		kill `cat $SBPID`
+	else
+		exit 1
 	fi
 	sleep 1
 
@@ -77,16 +85,12 @@ stop_daemon ()
 	counter=20
 	while [ $counter -gt 0 ] 
 	do
-		daemon_status || break
+		daemon_status || exit 0
 		let counter=counter-1
 		sleep 1
 	done
 
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/SickBeard ]
-	then
-		rm -f $SYNO3APP/SickBeard
-	fi
+	exit 1
 }
 
 daemon_status ()
@@ -98,7 +102,7 @@ daemon_status ()
 case $1 in
 	start)
 		if daemon_status; then
-			echo "SickBeard daemon already running !"
+			echo "SickBeard daemon already running!"
 			exit 0
 		else
 			echo "Starting SickBeard daemon..."
@@ -109,7 +113,7 @@ case $1 in
 	stop)
 		echo "Stopping SickBeard daemon..."
 		stop_daemon
-		exit 0
+		exit $?
 		;;
 	restart)
 		stop_daemon

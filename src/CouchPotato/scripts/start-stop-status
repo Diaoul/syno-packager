@@ -67,9 +67,17 @@ stop_daemon ()
 	# Log
 	echo `date`" : Stoping CouchPotato..." >> $CPLOG
 
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/CouchPotato ]
+	then
+		rm -f $SYNO3APP/CouchPotato
+	fi
+
 	# Kill daemon
 	if [ -f $CPPID ]; then
 		kill `cat $CPPID`
+	else
+		exit 1
 	fi
 	sleep 1
 
@@ -77,16 +85,12 @@ stop_daemon ()
 	counter=20
 	while [ $counter -gt 0 ] 
 	do
-		daemon_status || break
+		daemon_status || exit 0
 		let counter=counter-1
 		sleep 1
 	done
 
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/CouchPotato ]
-	then
-		rm -f $SYNO3APP/CouchPotato
-	fi
+	exit 1
 }
 
 daemon_status ()
@@ -109,7 +113,7 @@ case $1 in
 	stop)
 		echo "Stopping CouchPotato daemon..."
 		stop_daemon
-		exit 0
+		exit $?
 		;;
 	restart)
 		stop_daemon
