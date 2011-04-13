@@ -7,8 +7,8 @@ All-in-one tool to cross-compile and make Synology Packages (SPK)
 HOW-TO
 ------
 1. Grab your copy of syno-packager `git clone git://github.com/Diaoul/syno-packager.git` or fork it if you want to contribute
-2. Download precompiled toolchains (see [here](/tree/master/ext/precompiled))
-3. Download external packages (see [here](/tree/master/ext/packages))
+2. Download precompiled toolchains (see [here](https://github.com/Diaoul/syno-packager/tree/master/ext/precompiled/))
+3. Download external packages (see [here](https://github.com/Diaoul/syno-packager/tree/master/ext/packages/))
 4. Create the rules you need in rules.mk in the corresponding category folowing multiple examples you can find in it
 5. Create a myPackage.mk with variable definitions folowing otherPackages.mk examples
 6. Do some debug using basic rules (see below)
