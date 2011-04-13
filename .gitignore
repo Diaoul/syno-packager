@@ -1,17 +1,11 @@
 # Tool chains #
 ext/precompiled/gcc*.tgz
 
-# Libraries #
-ext/libs/*.tgz
-ext/libs/*.tar.gz
-ext/libs/*.tar.bz2
-ext/libs/*.zip
-
-# Binaries #
-ext/exec/*.tgz
-ext/exec/*.tar.gz
-ext/exec/*.tar.bz2
-ext/exec/*.zip
+# Binaries and libraries #
+ext/packages/*.tgz
+ext/packages/*.tar.gz
+ext/packages/*.tar.bz2
+ext/packages/*.zip
 
 # Outputs #
 out/
