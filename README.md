@@ -41,6 +41,6 @@ Official SPKs can be dowloaded directly from [Synology's website](http://www.syn
 Documentation
 -------------
 [A wiki about SPKs](http://forum.synology.com/wiki/index.php/Synology_package_files) is available but a little outdated as some things have changed since DSM 3
-[3rd-Party Apps Integration Guide](http://www.google.com/url?sa=t&source=web&cd=1&ved=0CBYQFjAA&url=http%3A%2F%2Fdownload.synology.com%2Fdownload%2Fds%2Fuserguide%2FSynology%2520NAS%2520Server%25203rd-Party%2520Apps%2520Integration%2520Guide.pdf&rct=j&q=synology%20pdf&ei=tYOlTfbaH4uEhQeZ4fXNCQ&usg=AFQjCNF1gASkfe_ze9oKlR3C-F58mnsuEA&sig2=USi8aVko-VKrA_F9UcB6zA&cad=rja) is very handy and up-to-date
+[3rd-Party Apps Integration Guide](http://download.synology.com/download/ds/userguide/Synology%20NAS%20Server%203rd-Party%20Apps%20Integration%20Guide.pdf) is very handy and up-to-date
 
 
