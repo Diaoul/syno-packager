@@ -30,7 +30,7 @@ Basic rules
 
 Help
 ----
-Get some help typing `make help` and
+Get some help typing `make help` and `make -f myPackage.mk tests` to see variables
 
 
 Downloads
