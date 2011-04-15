@@ -295,13 +295,14 @@ $(AVAILABLE_PKGS): %: $(OUT_DIR)/%/syno.install
 $(AVAILABLE_PKGS:%=%.clean):
 	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
 
-# For each perl package, create a set of rules to install it
+# Perl module installation
 $(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH)
 	cd $* && \
 	perl Makefile.PL INSTALL_BASE=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	make -C $(dir $@)
 	make -C $(dir $@) install
 
+# Python modules installation
 $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/host.install %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $* && \
