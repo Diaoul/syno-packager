@@ -296,8 +296,8 @@ $(AVAILABLE_PKGS:%=%.clean):
 	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
 
 # For each perl package, create a set of rules to install it
-$(PERL_PKGS:%=$(OUT_DIR)/%/syno.install): %/syno.install: %.unpack precomp/$(ARCH)
-	cd $(dir $@) && \
+$(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH)
+	cd $* && \
 	perl Makefile.PL INSTALL_BASE=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	make -C $(dir $@)
 	make -C $(dir $@) install
