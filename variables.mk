@@ -23,7 +23,7 @@ ARCH?=88f5281
 
 # Non-standard package list
 NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c
-NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl Cheetah Markdown pyOpenSSL psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox yenc
+NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
 PERL_PKGS=Config-IniFiles
 PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope
 
@@ -46,8 +46,8 @@ AVAILABLE_PKGS=$(sort $(strip $(foreach pkg, \
 EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS)))
 
 # Sort package names in variables for further use depending of their "standardness"
-STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE) $(PERL_PKGS), $(AVAILABLE_PKGS))
-STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS), $(AVAILABLE_PKGS))
+STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
+STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
 
 # Declaring directories
 ifeq ($(ARCH),all)
