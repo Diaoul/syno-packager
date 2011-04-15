@@ -302,6 +302,13 @@ $(PERL_PKGS:%=$(OUT_DIR)/%/syno.install): %/syno.install: %.unpack precomp/$(ARC
 	make -C $(dir $@)
 	make -C $(dir $@) install
 
+$(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/host.install %.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $* && \
+	LDFLAGS="$(LDFLAGS)" \
+	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	touch $@
+
 $(EXTRA_PKGS): %: $(OUT_DIR)/%.install
 
 
@@ -710,31 +717,6 @@ $(OUT_DIR)/procps/syno.install: $(OUT_DIR)/procps.unpack precomp/$(ARCH) $(OUT_D
 		sbin="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/" \
 		bin="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/" \
 		SKIP="\$$(MANFILES)" install
-	touch $@
-
-$(OUT_DIR)/Markdown/syno.install: $(OUT_DIR)/Python/host.install $(OUT_DIR)/Markdown.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(OUT_DIR)/Markdown/ && \
-	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
-
-$(OUT_DIR)/Cheetah/syno.install: $(OUT_DIR)/Markdown/syno.install $(OUT_DIR)/Cheetah.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(OUT_DIR)/Cheetah/ && \
-	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
-
-$(OUT_DIR)/yenc/syno.install: $(OUT_DIR)/Python/host.install $(OUT_DIR)/yenc.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(OUT_DIR)/yenc/ && \
-	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
-
-$(OUT_DIR)/pyOpenSSL/syno.install: $(OUT_DIR)/Python/host.install $(OUT_DIR)/pyOpenSSL.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(OUT_DIR)/pyOpenSSL/ && \
-	LDFLAGS="$(LDFLAGS)" \
-	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	touch $@
 
 $(OUT_DIR)/nzbgetweb/syno.install: $(OUT_DIR)/nzbgetweb.unpack precomp/$(ARCH)
