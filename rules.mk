@@ -305,7 +305,9 @@ $(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH
 # Python modules installation
 $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/host.install %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
 	cd $* && \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/" \
 	LDFLAGS="$(LDFLAGS)" \
 	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	touch $@

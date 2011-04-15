@@ -25,7 +25,7 @@ ARCH?=88f5281
 NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c
 NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
 PERL_PKGS=Config-IniFiles
-PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope
+PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope pip setuptools
 
 # Using arch-target.map to define some variables
 ARCHS=$(shell cat arch-target.map | cut -d: -f1)
