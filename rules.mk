@@ -249,15 +249,15 @@ precomp/$(ARCH):
 # For each package, create a out/<arch>/<pkg>.unpack target that unpacks the
 # source to out/<arch>/<versionned pkg> and creates a symlink called
 # out/<arch>/<pkg> that points to it.
-$(AVAILABLE_PKGS:%=$(OUT_DIR)/%.unpack):
+$(AVAILABLE_PKGS:%=$(OUT_DIR)/%.unpack):$(OUT_DIR)/%.unpack:
 	@echo $@ ----\> $^
-	mkdir -p $(OUT_DIR)
-	if [ -f ext/*/$(patsubst %.unpack,%,$(notdir $@))*.t* ]; then \
-		tar mxf ext/*/$(patsubst %.unpack,%,$(notdir $@))*.t* -C $(OUT_DIR); \
-	elif [ -f ext/*/$(patsubst %.unpack,%,$(notdir $@))*.z* ]; then \
-		unzip ext/*/$(patsubst %.unpack,%,$(notdir $@))*.z* -d $(OUT_DIR); \
+	@mkdir -p $(OUT_DIR)
+	@if [ -f ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* ]; then \
+		tar mxf ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* -C $(OUT_DIR); \
+	elif [ -f ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip ]; then \
+		unzip ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip -d $(OUT_DIR); \
 	fi
-	cd $(OUT_DIR)/ && [ -e $(patsubst %.unpack,%,$(notdir $@)) ] || ln -s $(patsubst %.unpack,%,$(notdir $@))-* $(patsubst %.unpack,%,$(notdir $@))
+	@cd $(OUT_DIR)/ && [ -e $* ] || ln -s $*-* $*
 	touch $@
 
 # For each standard package, create a out/<arch>/<pkg>/syno.config target.

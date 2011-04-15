@@ -32,11 +32,14 @@ MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
 CC_PATH=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)
 
-# List available packages in ext/packages directory
-AVAILABLE_PKGS=$(strip $(foreach pkg, \
+# Define a magical regex to parse packages
+REGEX=^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$
+
+# List all packages in ext/packages directory
+AVAILABLE_PKGS=$(sort $(strip $(foreach pkg, \
 	$(notdir $(wildcard ext/packages/*.tgz ext/packages/*.tar.gz ext/packages/*.tar.bz2 ext/packages/*.zip)), \
-	$(shell echo $(pkg) | perl -p -e 's/^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$/\1/') \
-))
+	$(shell echo $(pkg) | perl -p -e 's/$(REGEX)/\1/') \
+)))
 
 # Extra rules for very non-standard packages (no binaries, no source code)
 EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS)))
@@ -76,7 +79,7 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 
 # Packaging variables
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(shell echo $(notdir $(wildcard ext/packages/$(INSTALL_PKG)*.*)) | perl -p -e 's/^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$/\3/; s/^\s*$$/tip/')
+SPK_VERSION=$(shell echo $(notdir $(wildcard ext/packages/$(INSTALL_PKG)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
 SPK_ARCH="$(ARCH)"
 
 # Build types
