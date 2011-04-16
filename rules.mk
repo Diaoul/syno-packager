@@ -118,7 +118,6 @@ tests: gcc-version
 	@echo "	SPK_ARCH			$(SPK_ARCH)"
 
 help:
-	@echo ""
 	@echo "usage: make [ARCH=] COMMAND"
 	@echo ""
 	@echo "The most common COMMANDs are:"
@@ -252,10 +251,10 @@ precomp/$(ARCH):
 $(AVAILABLE_PKGS:%=$(OUT_DIR)/%.unpack):$(OUT_DIR)/%.unpack:
 	@echo $@ ----\> $^
 	@mkdir -p $(OUT_DIR)
-	@if [ -f ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* ]; then \
-		tar mxf ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* -C $(OUT_DIR); \
-	elif [ -f ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip ]; then \
-		unzip ext/packages/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip -d $(OUT_DIR); \
+	@if [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* ]; then \
+		tar mxf $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* -C $(OUT_DIR); \
+	elif [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip ]; then \
+		unzip $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip -d $(OUT_DIR); \
 	fi
 	@cd $(OUT_DIR)/ && [ -e $* ] || ln -s $*-* $*
 	touch $@
@@ -307,7 +306,7 @@ $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/hos
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
 	cd $* && \
-	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/" \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
 	LDFLAGS="$(LDFLAGS)" \
 	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	touch $@
@@ -376,7 +375,7 @@ $(OUT_DIR)/coreutils/syno.config: $(OUT_DIR)/coreutils.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
-ifeq ($(OPENSSL_VERSION),1.0.0)
+ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),1.0.0)
 	@echo "Using OpenSSL version 1.0.0"
 	cd $(OUT_DIR)/openssl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -384,7 +383,7 @@ ifeq ($(OPENSSL_VERSION),1.0.0)
 			zlib-dynamic shared \
 			"syno:$(TARGET)-gcc:-O3 $(CFLAGS)::(unknown)::-ldl $(LDFLAGS):BN_LLONG:::::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 endif
-ifeq ($(OPENSSL_VERSION),0.9.8)
+ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),0.9.8)
 	@echo "Using OpenSSL version 0.9.8"
 	cd $(OUT_DIR)/openssl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \

@@ -41,9 +41,6 @@ KEPT_INCS=python%
 DEL_INCS=
 KEPT_FOLDERS=bin lib SABnzbd include
 
-# OpenSSL version used (1.0.0 or 0.9.8)
-OPENSSL_VERSION=1.0.0
-
 # Optimisation flags
 OFLAGS=-O2
 

@@ -47,9 +47,6 @@ KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=SickBeard var share
 
-# OpenSSL version used (1.0.0 or 0.9.8)
-OPENSSL_VERSION=
-
 # Optimisation flags
 OFLAGS=
 

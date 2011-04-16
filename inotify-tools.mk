@@ -41,9 +41,6 @@ KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=bin lib
 
-# OpenSSL version used (1.0.0 or 0.9.8)
-OPENSSL_VERSION=
-
 # Optimisation flags
 OFLAGS=-O3
 

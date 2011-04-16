@@ -21,6 +21,18 @@
 # Default arch
 ARCH?=88f5281
 
+# Directories
+ifeq ($(ARCH),all)
+	OUT_DIR=out
+else
+	OUT_DIR=out/$(ARCH)
+endif
+CUR_DIR:=$(PWD)
+EXT_DIR=$(CUR_DIR)/ext
+PKG_DIR=$(EXT_DIR)/packages
+TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
+ROOT=$(CUR_DIR)/$(OUT_DIR)/root
+
 # Non-standard package list
 NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c
 NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
@@ -36,11 +48,18 @@ CC_PATH=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(
 # Define a magical regex to parse packages
 REGEX=^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$
 
-# List all packages in ext/packages directory
-AVAILABLE_PKGS=$(sort $(strip $(foreach pkg, \
-	$(notdir $(wildcard ext/packages/*.tgz ext/packages/*.tar.gz ext/packages/*.tar.bz2 ext/packages/*.zip)), \
+# List all packages in $(PKG_DIR) directory
+ALL_PKGS=$(strip $(foreach pkg, \
+	$(notdir $(wildcard $(PKG_DIR)/*.tgz $(PKG_DIR)/*.tar.gz $(PKG_DIR)/*.tar.bz2 $(PKG_DIR)/*.zip)), \
 	$(shell echo $(pkg) | perl -p -e 's/$(REGEX)/\1/') \
-)))
+))
+AVAILABLE_PKGS=$(sort $(ALL_PKGS))
+
+# Handle multi-version packages by creating a PKG_VERSION variable that holds the lowest version number found
+$(foreach MVP, \
+	$(strip $(shell echo $(ALL_PKGS) | tr " " "\n" | sort | uniq -d | tr "\n" " " | tr [:lower:] [:upper:])), \
+	$(call $(eval $(MVP)_VERSION=$(shell find $(PKG_DIR)/ -iname "$(MVP)*" -printf "%f" -quit | perl -p -e 's/$(REGEX)/\3/'))) \
+)
 
 # Extra rules for very non-standard packages (no binaries, no source code)
 EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS)))
@@ -48,18 +67,6 @@ EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS
 # Sort package names in variables for further use depending of their "standardness"
 STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
 STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
-
-# Declaring directories
-ifeq ($(ARCH),all)
-	OUT_DIR=out
-else
-	OUT_DIR=out/$(ARCH)
-endif
-
-CUR_DIR:=$(PWD)
-EXT_DIR=$(CUR_DIR)/ext
-TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
-ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 
 # Environment variables common to all package compilation
 ifeq ($(ARCH),88f628x)
@@ -80,7 +87,7 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 
 # Packaging variables
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(shell echo $(notdir $(wildcard ext/packages/$(INSTALL_PKG)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
+SPK_VERSION=$(shell echo $(notdir $(wildcard $(PKG_DIR)/$(INSTALL_PKG)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
 SPK_ARCH="$(ARCH)"
 
 # Build types
