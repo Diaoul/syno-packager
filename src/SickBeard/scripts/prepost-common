@@ -19,6 +19,18 @@
 
 preinst ()
 {
+	# Check if Python is installed
+	if [ ! -d /usr/local/Python ]; then
+		echo "Python SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
+	# Check if toolbox is installed
+	if [ ! -d /usr/local/toolbox ]; then
+		echo "toolbox SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
 	# Check if SABnzbd is installed
 	if [ ! -d /usr/local/SABnzbd ]; then
 		echo "SABnzbd SPK is not installed. Install it and try again."

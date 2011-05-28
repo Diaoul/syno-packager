@@ -47,9 +47,6 @@ KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=SickBeard var share
 
-# Optimisation flags
-OFLAGS=
-
 
 ################
 # Import rules #
