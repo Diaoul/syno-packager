@@ -313,6 +313,8 @@ $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/hos
 
 $(EXTRA_PKGS): %: $(OUT_DIR)/%.install
 
+$(META_PKGS):%: $(OUT_DIR)/%.install
+
 
 ##############################
 # User defined, non-standard #
