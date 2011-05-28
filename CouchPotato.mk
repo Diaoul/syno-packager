@@ -47,9 +47,6 @@ KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=CouchPotato var share
 
-# Optimisation flags
-OFLAGS=
-
 
 ################
 # Import rules #
