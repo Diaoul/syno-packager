@@ -29,10 +29,10 @@ NZBTMI=$NZBSHR/terminfo
 
 # Binaries
 NZBEXE=$NZBBIN/nzbget
-NICEXE=$NZBBIN/nice
-IONEXE=$NZBBIN/ionice
-ADDUSREXE=$NZBBIN/adduser
-DELUSREXE=$NZBBIN/deluser
+NICEXE=/usr/local/bin/nice
+IONEXE=/usr/local/bin/ionice
+ADDUSREXE=/usr/local/bin/adduser
+DELUSREXE=/usr/local/bin/deluser
 SUEXE=/bin/su
 PSEXE=ps
 

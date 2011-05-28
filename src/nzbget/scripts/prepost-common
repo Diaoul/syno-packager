@@ -29,10 +29,10 @@ NZBTMI=$NZBSHR/terminfo
 
 # Binaries
 NZBEXE=$NZBBIN/nzbget
-NICEXE=$NZBBIN/nice
-IONEXE=$NZBBIN/ionice
-ADDUSREXE=$NZBBIN/adduser
-DELUSREXE=$NZBBIN/deluser
+NICEXE=/usr/local/bin/nice
+IONEXE=/usr/local/bin/ionice
+ADDUSREXE=/usr/local/bin/adduser
+DELUSREXE=/usr/local/bin/deluser
 SUEXE=/bin/su
 PSEXE=ps
 
@@ -54,6 +54,13 @@ preinst ()
 		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
 		exit 1
 	fi
+	
+	# Check if toolbox is installed
+	if [ ! -d /usr/local/toolbox ]; then
+		echo "toolbox SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
 	exit 0
 }
 
