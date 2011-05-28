@@ -1,0 +1,102 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+preinst ()
+{
+	# Find the CPU architecture
+	synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+	arch=`echo $synoinfo | cut -d_ -f2`
+
+	# Check if the architecture is supported
+	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
+		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
+		exit 1
+	fi
+	exit 0
+}
+
+postinst ()
+{
+	# Create the view directory
+	mkdir -p /usr/local/toolbox
+	mkdir -p /usr/local/bin
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/bin /usr/local/toolbox/bin
+
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Create symlinks
+	ln -s ${SYNOPKG_PKGDEST}/bin/cfg.parser /usr/local/bin/cfg.parser
+	ln -s ${SYNOPKG_PKGDEST}/bin/adduser /usr/local/bin/adduser
+	ln -s ${SYNOPKG_PKGDEST}/bin/deluser /usr/local/bin/deluser
+	ln -s ${SYNOPKG_PKGDEST}/bin/nice /usr/local/bin/nice
+	ln -s ${SYNOPKG_PKGDEST}/bin/renice /usr/local/bin/renice
+	ln -s ${SYNOPKG_PKGDEST}/bin/ionice /usr/local/bin/ionice
+	ln -s ${SYNOPKG_PKGDEST}/bin/par2 /usr/local/bin/par2
+	ln -s ${SYNOPKG_PKGDEST}/bin/ps /usr/local/bin/ps
+	ln -s ${SYNOPKG_PKGDEST}/bin/par2create /usr/local/bin/par2create
+	ln -s ${SYNOPKG_PKGDEST}/bin/par2verify /usr/local/bin/par2verify
+	ln -s ${SYNOPKG_PKGDEST}/bin/par2repair /usr/local/bin/par2repair
+
+	# Correct the files permission
+	chmod 755 ${SYNOPKG_PKGDEST}/bin/*
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks
+	rm -f /usr/local/bin/cfg.parser
+	rm -f /usr/local/bin/adduser
+	rm -f /usr/local/bin/deluser
+	rm -f /usr/local/bin/nice
+	rm -f /usr/local/bin/renice
+	rm -f /usr/local/bin/ionice
+	rm -f /usr/local/bin/par2
+	rm -f /usr/local/bin/ps
+	rm -f /usr/local/bin/par2create
+	rm -f /usr/local/bin/par2verify
+	rm -f /usr/local/bin/par2repair
+
+	# Remove symlinks from /usr/local/toolbox
+	rm -f /usr/local/toolbox/bin
+
+	# Remove the view directory
+	rmdir /usr/local/toolbox
+
+	exit 0
+}
+
+preupgrade ()
+{
+	exit 1
+}
+
+postupgrade ()
+{
+	exit 1
+}

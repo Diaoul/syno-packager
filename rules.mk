@@ -747,3 +747,5 @@ $(OUT_DIR)/ncurses/syno.terminfo: $(OUT_DIR)/ncurses/syno.install
 	mkdir -p  $(ROOT)/share/terminfo
 	cp -R $(TEMPROOT)/share/terminfo $(ROOT)/share/terminfo
 	touch $@
+
+$(OUT_DIR)/toolbox.install: $(OUT_DIR)/Config-IniFiles/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/procps/syno.install $(OUT_DIR)/par2cmdline/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement

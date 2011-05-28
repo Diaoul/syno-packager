@@ -38,6 +38,7 @@ NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi 
 NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
 PERL_PKGS=Config-IniFiles
 PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope pip setuptools BeautifulSoup
+META_PKGS=toolbox
 
 # Using arch-target.map to define some variables
 ARCHS=$(shell cat arch-target.map | cut -d: -f1)
