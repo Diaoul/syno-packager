@@ -22,7 +22,7 @@
 # Standard rules #
 ##################
 #
-all: out check-arch $(INSTALL_PKG)
+all: out check-arch $(COMPILE_DEPS) $(INSTALL_PKG)
 	@echo "$(if $(strip $^),done,Run \"make help\" to get help info)."
 
 $(ARCHS): out
