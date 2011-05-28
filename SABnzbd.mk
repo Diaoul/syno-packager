@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+#############
+# All archs #
+#############
+#
+ARCH=all
+
 ####################
 # Import variables #
 ####################
@@ -30,22 +36,16 @@ include variables.mk
 #
 # Package and dependencies definition
 INSTALL_PKG=SABnzbd
-INSTALL_DEPS=Python zlib openssl sqlite par2cmdline coreutils util-linux busybox Markdown Cheetah pyOpenSSL yenc procps Config-IniFiles
+INSTALL_DEPS=
 
 # Cleanup
-KEPT_BINS=python nice renice ionice ps par2% busybox adduser deluser
+KEPT_BINS=
 DEL_BINS=
-KEPT_LIBS=libcrypto.so% libssl.so% libz.so% libsqlite3.so% python% engines perl5
-DEL_LIBS=%.a %.la %.sh pkgconfig
-KEPT_INCS=python%
+KEPT_LIBS=
+DEL_LIBS=
+KEPT_INCS=
 DEL_INCS=
-KEPT_FOLDERS=bin lib SABnzbd include
-
-# Version overriding
-OPENSSL_VERSION=1.0.0
-
-# Optimisation flags
-OFLAGS=-O2
+KEPT_FOLDERS=SABnzbd var share
 
 
 ################

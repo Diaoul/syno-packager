@@ -598,24 +598,11 @@ $(OUT_DIR)/SickBeard.install:
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard/.git*
 	touch $@
 
-$(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/SABnzbd/syno.clean
+$(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/SABnzbd.unpack
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd
 	cp -Rf $(OUT_DIR)/SABnzbd/* $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd
-	rm -f $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd/syno.config
 	touch $@
-
-$(OUT_DIR)/SABnzbd/syno.clean: $(OUT_DIR)/Config-IniFiles/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/procps/syno.install $(OUT_DIR)/par2cmdline/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement $(OUT_DIR)/SABnzbd/syno.python $(OUT_DIR)/SABnzbd.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	rm -f $(ROOT)/bin/par2create
-	rm -f $(ROOT)/bin/par2verify
-	rm -f $(ROOT)/bin/par2repair
-	cd $(ROOT)/bin/ && ln -s par2 par2create
-	cd $(ROOT)/bin/ && ln -s par2 par2verify
-	cd $(ROOT)/bin/ && ln -s par2 par2repair
-	touch $@
-
-$(OUT_DIR)/SABnzbd/syno.python: $(OUT_DIR)/Python/syno.config $(OUT_DIR)/yenc/syno.install $(OUT_DIR)/Markdown/syno.install $(OUT_DIR)/Cheetah/syno.install $(OUT_DIR)/pyOpenSSL/syno.install $(OUT_DIR)/Python/syno.install
 
 $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
 	@echo $@ ----\> $^
