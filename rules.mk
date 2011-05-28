@@ -323,6 +323,12 @@ $(META_PKGS):%: $(OUT_DIR)/%.install
 #
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 
+$(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
+
+$(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install
+
+$(OUT_DIR)/setuptools/syno.install: $(OUT_DIR)/zlib/syno.install
+
 $(OUT_DIR)/libpar2/syno.config: $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libpar2.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/libpar2-0.2-bugfixes.patch
@@ -415,8 +421,6 @@ $(OUT_DIR)/curl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl/syn
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $(OUT_DIR)/curl/syno.config
 
-$(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
-
 $(OUT_DIR)/polarssl/syno.config: $(OUT_DIR)/polarssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	@sed -i "1i\CC=$(TARGET)-gcc" $(OUT_DIR)/polarssl/Makefile $(OUT_DIR)/polarssl/library/Makefile
@@ -445,9 +449,10 @@ $(OUT_DIR)/protobuf-c/syno.config: $(OUT_DIR)/protobuf-c.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/Python/host.install: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libffi/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
+	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.1-hostcompile.patch
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
-	./configure
+	./configure --with-zlib=/usr/include
 	make -C $(dir $@)
 	mv $(dir $@)python $(dir $@)hostpython
 	mv $(dir $@)Parser/pgen $(dir $@)Parser/hostpgen

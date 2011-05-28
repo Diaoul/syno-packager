@@ -1,232 +1,35 @@
-diff -burN Python-2.7.1/configure Python-2.7.1-modif/configure
---- Python-2.7.1/configure	2010-11-01 08:47:19.000000000 +0700
-+++ Python-2.7.1-modif/configure	2011-02-04 14:59:38.996211002 +0700
-@@ -13597,7 +13597,7 @@
-   $as_echo_n "(cached) " >&6
- else
-   if test "$cross_compiling" = yes; then :
--  ac_cv_have_long_long_format=no
-+  ac_cv_have_long_long_format=yes
- else
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
- /* end confdefs.h.  */
-@@ -13664,13 +13664,12 @@
- 
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking for %zd printf() format support" >&5
- $as_echo_n "checking for %zd printf() format support... " >&6; }
--if test "${ac_cv_have_size_t_format+set}" = set; then :
--  $as_echo_n "(cached) " >&6
--else
--  if test "$cross_compiling" = yes; then :
--  ac_cv_have_size_t_format="cross -- assuming yes"
--
--else
-+#if test "$cross_compiling" = yes; then :
-+#  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-+#$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-+#as_fn_error "cannot run test program while cross compiling
-+#See \`config.log' for more details." "$LINENO" 5; }
-+#else
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
- /* end confdefs.h.  */
- 
-@@ -13717,16 +13716,8 @@
- fi
- rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-   conftest.$ac_objext conftest.beam conftest.$ac_ext
--fi
--
--fi
--{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_size_t_format" >&5
--$as_echo "$ac_cv_have_size_t_format" >&6; }
--if test "$ac_cv_have_size_t_format" != no ; then
--
--$as_echo "#define PY_FORMAT_SIZE_T \"z\"" >>confdefs.h
-+#fi
- 
--fi
- 
- ac_fn_c_check_type "$LINENO" "socklen_t" "ac_cv_type_socklen_t" "
- #ifdef HAVE_SYS_TYPES_H
-diff -burN Python-2.7.1/configure.in Python-2.7.1-modif/configure.in
---- Python-2.7.1/configure.in	2010-11-01 08:47:19.000000000 +0700
-+++ Python-2.7.1-modif/configure.in	2011-02-04 15:02:28.260211001 +0700
-@@ -4157,105 +4157,44 @@
-   AC_MSG_RESULT(no)
- fi
- 
--if test "$have_long_long" = yes
--then
--  AC_MSG_CHECKING(for %lld and %llu printf() format support)
--  AC_CACHE_VAL(ac_cv_have_long_long_format,
--  AC_RUN_IFELSE([AC_LANG_SOURCE([[[
--  #include <stdio.h>
--  #include <stddef.h>
--  #include <string.h>
--
--  #ifdef HAVE_SYS_TYPES_H
--  #include <sys/types.h>
--  #endif
--
--  int main()
--  {
--      char buffer[256];
--
--      if (sprintf(buffer, "%lld", (long long)123) < 0)
--          return 1;
--      if (strcmp(buffer, "123"))
--          return 1;
--
--      if (sprintf(buffer, "%lld", (long long)-123) < 0)
--          return 1;
--      if (strcmp(buffer, "-123"))
--          return 1;
--
--      if (sprintf(buffer, "%llu", (unsigned long long)123) < 0)
--          return 1;
--      if (strcmp(buffer, "123"))
--          return 1;
--
--      return 0;
--  }
--  ]]])],
--  [ac_cv_have_long_long_format=yes],
--  [ac_cv_have_long_long_format=no],
--  [ac_cv_have_long_long_format=no])
--  )
--  AC_MSG_RESULT($ac_cv_have_long_long_format)
--fi
--
--if test "$ac_cv_have_long_long_format" = yes
--then
--  AC_DEFINE(PY_FORMAT_LONG_LONG, "ll",
--  [Define to printf format modifier for long long type])
--fi
--
--if test $ac_sys_system = Darwin
--then
--	LIBS="$LIBS -framework CoreFoundation"
--fi
--
--
--AC_CACHE_CHECK([for %zd printf() format support], ac_cv_have_size_t_format, [dnl
--AC_RUN_IFELSE([AC_LANG_SOURCE([[
--#include <stdio.h>
--#include <stddef.h>
--#include <string.h>
--
--#ifdef HAVE_SYS_TYPES_H
--#include <sys/types.h>
--#endif
--
--#ifdef HAVE_SSIZE_T
--typedef ssize_t Py_ssize_t;
--#elif SIZEOF_VOID_P == SIZEOF_LONG
--typedef long Py_ssize_t;
--#else
--typedef int Py_ssize_t;
--#endif
--
--int main()
--{
--    char buffer[256];
--
--    if(sprintf(buffer, "%zd", (size_t)123) < 0)
--       	return 1;
--
--    if (strcmp(buffer, "123"))
--	return 1;
--
--    if (sprintf(buffer, "%zd", (Py_ssize_t)-123) < 0)
--       	return 1;
--
--    if (strcmp(buffer, "-123"))
--	return 1;
--
--    return 0;
--}
--]])],
--[ac_cv_have_size_t_format=yes],
--[ac_cv_have_size_t_format=no],
--[ac_cv_have_size_t_format="cross -- assuming yes"
--])])
--if test "$ac_cv_have_size_t_format" != no ; then
--  AC_DEFINE(PY_FORMAT_SIZE_T, "z",
--  [Define to printf format modifier for Py_ssize_t])
--fi
-+#AC_MSG_CHECKING(for %zd printf() format support)
-+#AC_TRY_RUN([#include <stdio.h>
-+##include <stddef.h>
-+##include <string.h>
-+#
-+##ifdef HAVE_SYS_TYPES_H
-+##include <sys/types.h>
-+##endif
-+#
-+##ifdef HAVE_SSIZE_T
-+#typedef ssize_t Py_ssize_t;
-+##elif SIZEOF_VOID_P == SIZEOF_LONG
-+#typedef long Py_ssize_t;
-+##else
-+#typedef int Py_ssize_t;
-+##endif
-+#
-+#int main()
-+#{
-+#    char buffer[256];
-+#
-+#    if(sprintf(buffer, "%zd", (size_t)123) < 0)
-+#       	return 1;
-+#
-+#    if (strcmp(buffer, "123"))
-+#	return 1;
-+#
-+#    if (sprintf(buffer, "%zd", (Py_ssize_t)-123) < 0)
-+#       	return 1;
-+#
-+#    if (strcmp(buffer, "-123"))
-+#	return 1;
-+#
-+#    return 0;
-+#}],
-+#[AC_MSG_RESULT(yes)
-+# AC_DEFINE(PY_FORMAT_SIZE_T, "z", [Define to printf format modifier for Py_ssize_t])],
-+# AC_MSG_RESULT(no))
- 
- AC_CHECK_TYPE(socklen_t,,
-   AC_DEFINE(socklen_t,int,
-
-diff -burN Python-2.7.1/Makefile.pre.in Python-2.7.1-modif/Makefile.pre.in
---- Python-2.7.1/Makefile.pre.in	2010-10-14 18:37:30.000000000 +0700
-+++ Python-2.7.1-modif/Makefile.pre.in	2011-02-04 14:26:40.960211001 +0700
+diff -Naur Python-2.7-old/Makefile.pre.in Python-2.7-new/Makefile.pre.in
+--- Python-2.7-old/Makefile.pre.in	2010-04-11 17:10:46.000000000 -0700
++++ Python-2.7-new/Makefile.pre.in	2010-07-09 13:40:47.000000000 -0700
 @@ -179,6 +179,7 @@
  
  PYTHON=		python$(EXE)
  BUILDPYTHON=	python$(BUILDEXE)
-+HOSTPYTHON=	./$(BUILDPYTHON)
++HOSTPYTHON=     ./$(BUILDPYTHON)
  
  # The task to run while instrument when building the profile-opt target
  PROFILE_TASK=	$(srcdir)/Tools/pybench/pybench.py -n 2 --with-gc --with-syscheck
-@@ -211,6 +212,7 @@
- ##########################################################################
+@@ -212,6 +213,8 @@
  # Parser
  PGEN=		Parser/pgen$(EXE)
-+HOSTPGEN=	$(PGEN)
  
++HOSTPGEN=   $(PGEN)
++
  POBJS=		\
  		Parser/acceler.o \
-@@ -404,8 +406,8 @@
+ 		Parser/grammar1.o \
+@@ -404,8 +407,8 @@
  # Build the shared modules
  sharedmods: $(BUILDPYTHON)
  	@case $$MAKEFLAGS in \
 -	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py -q build;; \
 -	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py build;; \
-+	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)'  $(HOSTPYTHON) -E $(srcdir)/setup.py -q build;; \
-+	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)'  $(HOSTPYTHON) -E $(srcdir)/setup.py build;; \
++	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' PYTHONXCPREFIX='$(DESTDIR)$(prefix)' $(HOSTPYTHON) -E $(srcdir)/setup.py -q build;; \
++	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' PYTHONXCPREFIX='$(DESTDIR)$(prefix)' $(HOSTPYTHON) -E $(srcdir)/setup.py build;; \
  	esac
  
  # Build static library
-@@ -538,7 +540,7 @@
+@@ -538,7 +541,7 @@
  
  $(GRAMMAR_H) $(GRAMMAR_C): $(PGEN) $(GRAMMAR_INPUT)
  		-@$(INSTALL) -d Include
@@ -235,7 +38,7 @@ diff -burN Python-2.7.1/Makefile.pre.in Python-2.7.1-modif/Makefile.pre.in
  
  $(PGEN):	$(PGENOBJS)
  		$(CC) $(OPT) $(LDFLAGS) $(PGENOBJS) $(LIBS) -o $(PGEN)
-@@ -920,26 +922,26 @@
+@@ -919,26 +922,26 @@
  		done; \
  	done
  	$(INSTALL_DATA) $(srcdir)/LICENSE $(DESTDIR)$(LIBDEST)/LICENSE.txt
@@ -248,7 +51,7 @@ diff -burN Python-2.7.1/Makefile.pre.in Python-2.7.1-modif/Makefile.pre.in
  		$(DESTDIR)$(LIBDEST)
 -	PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
 -		./$(BUILDPYTHON) -Wi -tt -O $(DESTDIR)$(LIBDEST)/compileall.py \
-+	-PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
++	-PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
 +		$(HOSTPYTHON) -Wi -tt -O $(DESTDIR)$(LIBDEST)/compileall.py \
  		-d $(LIBDEST) -f \
  		-x 'bad_coding|badsyntax|site-packages|lib2to3/tests/data' \
@@ -269,86 +72,66 @@ diff -burN Python-2.7.1/Makefile.pre.in Python-2.7.1-modif/Makefile.pre.in
  
  # Create the PLATDIR source directory, if one wasn't distributed..
  $(srcdir)/Lib/$(PLATDIR):
-@@ -1044,7 +1046,8 @@
+@@ -1042,8 +1045,10 @@
+ 
  # Install the dynamically loadable modules
  # This goes into $(exec_prefix)
- sharedinstall: sharedmods
+-sharedinstall: sharedmods
 -	$(RUNSHARED) ./$(BUILDPYTHON) -E $(srcdir)/setup.py install \
-+	CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' CROSS_COMPILE='$(CROSS_COMPILE)' \
++sharedinstall: sharedmods
++	CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' \
 +	$(RUNSHARED) $(HOSTPYTHON) -E $(srcdir)/setup.py install \
++		--skip-build \
  	   	--prefix=$(prefix) \
  		--install-scripts=$(BINDIR) \
  		--install-platlib=$(DESTSHARED) \
-diff -burN Python-2.7.1/setup.py Python-2.7.1-modif/setup.py
---- Python-2.7.1/setup.py	2010-10-31 23:40:21.000000000 +0700
-+++ Python-2.7.1-modif/setup.py	2011-02-04 15:06:05.368211002 +0700
-@@ -304,33 +304,39 @@
-             self.announce('WARNING: skipping import check for Cygwin-based "%s"'
-                 % ext.name)
-             return
-+        if os.environ.get('CROSS_COMPILE_TARGET') == 'yes':
-+            return
-         ext_filename = os.path.join(
-             self.build_lib,
-             self.get_ext_filename(self.get_ext_fullname(ext.name)))
-         try:
-             imp.load_dynamic(ext.name, ext_filename)
-         except ImportError, why:
--            self.failed.append(ext.name)
--            self.announce('*** WARNING: renaming "%s" since importing it'
--                          ' failed: %s' % (ext.name, why), level=3)
--            assert not self.inplace
--            basename, tail = os.path.splitext(ext_filename)
--            newname = basename + "_failed" + tail
--            if os.path.exists(newname):
--                os.remove(newname)
--            os.rename(ext_filename, newname)
--
--            # XXX -- This relies on a Vile HACK in
--            # distutils.command.build_ext.build_extension().  The
--            # _built_objects attribute is stored there strictly for
--            # use here.
--            # If there is a failure, _built_objects may not be there,
--            # so catch the AttributeError and move on.
--            try:
--                for filename in self._built_objects:
--                    os.remove(filename)
--            except AttributeError:
--                self.announce('unable to remove files (ignored)')
-+            if os.environ.get('CROSS_COMPILE_TARGET') != "yes":
-+                self.announce('*** WARNING: renaming "%s" since importing it'
-+                              ' failed: %s' % (ext.name, why), level=3)
-+                assert not self.inplace
-+                basename, tail = os.path.splitext(ext_filename)
-+                newname = basename + "_failed" + tail
-+                if os.path.exists(newname):
-+                    os.remove(newname)
-+                os.rename(ext_filename, newname)
-+
-+                # XXX -- This relies on a Vile HACK in
-+                # distutils.command.build_ext.build_extension().  The
-+                # _built_objects attribute is stored there strictly for
-+                # use here.
-+                # If there is a failure, _built_objects may not be there,
-+                # so catch the AttributeError and move on.
-+                try:
-+                    for filename in self._built_objects:
-+                        os.remove(filename)
-+                except AttributeError:
-+                    self.announce('unable to remove files (ignored)')
-+            else:
-+                self.announce('WARNING: "%s" failed importing, but we leave it '
-+                              'because we are cross-compiling' %
-+                              ext.name)
-         except:
-             exc_type, why, tb = sys.exc_info()
-             self.announce('*** WARNING: importing extension "%s" '
-@@ -1837,7 +1843,7 @@
-                                          ffi_configfile):
-                 from distutils.dir_util import mkpath
-                 mkpath(ffi_builddir)
--                config_args = []
-+                config_args =  sysconfig.get_config_var("CONFIG_ARGS").split(" ")
+diff -Naur Python-2.7-old/setup.py Python-2.7-new/setup.py
+--- Python-2.7-old/setup.py	2010-06-27 05:36:16.000000000 -0700
++++ Python-2.7-new/setup.py	2010-07-09 13:54:29.000000000 -0700
+@@ -23,6 +23,10 @@
+ # This global variable is used to hold the list of modules to be disabled.
+ disabled_module_list = []
  
-                 # Pass empty CFLAGS because we'll just append the resulting
-                 # CFLAGS to Python's; -g or -O2 is to be avoided.
++# _ctypes fails to cross-compile due to the libffi configure script.
++if os.environ.has_key('PYTHONXCPREFIX'):
++    disabled_module_list.append('_ctypes')
++
+ def add_dir_to_list(dirlist, dir):
+     """Add the directory 'dir' to the list 'dirlist' (at the front) if
+     1) 'dir' is not already in 'dirlist'
+@@ -278,6 +282,14 @@
+                           (ext.name, sys.exc_info()[1]))
+             self.failed.append(ext.name)
+             return
++
++        # Inport check will not work when cross-compiling.
++        if os.environ.has_key('PYTHONXCPREFIX'):
++            self.announce(
++                'WARNING: skipping inport check for cross-compiled: "%s"' %
++                ext.name)
++            return
++
+         # Workaround for Mac OS X: The Carbon-based modules cannot be
+         # reliably imported into a command-line Python
+         if 'Carbon' in ext.extra_link_args:
+
+--- Python-2.7Orig/configure	2011-04-29 22:30:59.231331437 +1000
++++ Python-2.7/configure	2010-05-29 01:28:47.000000000 +1000
+@@ -13517,7 +13517,7 @@
+   $as_echo_n "(cached) " >&6
+ else
+   if test "$cross_compiling" = yes; then :
+-  ac_cv_have_long_long_format=no
++  ac_cv_have_long_long_format="cross -- assuming yes"
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+@@ -13569,7 +13569,7 @@
+ $as_echo "$ac_cv_have_long_long_format" >&6; }
+ fi
+ 
+-if test "$ac_cv_have_long_long_format" = yes
++if test "$ac_cv_have_long_long_format" != no
+ then
+ 
+ $as_echo "#define PY_FORMAT_LONG_LONG \"ll\"" >>confdefs.h
