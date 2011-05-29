@@ -302,7 +302,7 @@ $(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH
 	make -C $(dir $@) install
 
 # Python modules installation
-$(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/host.install %.unpack precomp/$(ARCH)
+$(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/syno.config %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
 	cd $* && \
@@ -311,9 +311,7 @@ $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/hos
 	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	touch $@
 
-$(EXTRA_PKGS): %: $(OUT_DIR)/%.install
-
-$(META_PKGS):%: $(OUT_DIR)/%.install
+$(META_PKGS) $(NONSTD_MODULE_PKGS):%: $(OUT_DIR)/%/syno.install
 
 
 ##############################
@@ -324,10 +322,6 @@ $(META_PKGS):%: $(OUT_DIR)/%.install
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 
 $(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
-
-$(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install
-
-$(OUT_DIR)/setuptools/syno.install: $(OUT_DIR)/zlib/syno.install
 
 $(OUT_DIR)/libpar2/syno.config: $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libpar2.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
@@ -587,7 +581,17 @@ $(OUT_DIR)/busybox/syno.config: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
 # User defined, non-standard #
 # install rules              #
 ##############################
-#	
+#
+$(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/pip.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
+	cd $(dir $@) && \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
+	LDFLAGS="$(LDFLAGS)" \
+	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	sed -e "s|%CORRECT_PATH%|$(CUR_DIR)/$(OUT_DIR)|g" $(EXT_DIR)/others/pip-1.0.1-syno.tmpl.patch | patch -d $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin -p1
+	touch $@
+
 $(OUT_DIR)/CouchPotato.install:
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))

@@ -36,8 +36,13 @@ ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 # Non-standard package list
 NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c
 NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
+
+# Modules part (Python & Perl supported)
 PERL_PKGS=Config-IniFiles
-PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope pip setuptools BeautifulSoup
+PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope setuptools BeautifulSoup
+NONSTD_MODULE_PKGS=pip
+
+# Meta packages
 META_PKGS=toolbox
 
 # Using arch-target.map to define some variables
@@ -57,6 +62,7 @@ ALL_PKGS=$(strip $(foreach pkg, \
 AVAILABLE_PKGS=$(sort $(ALL_PKGS))
 
 # Handle multi-version packages by creating a PKG_VERSION variable that holds the lowest version number found
+#TODO: Extend to all packages so we know the current version we are using (useful for patchs)
 $(foreach MVP, \
 	$(strip $(shell echo $(ALL_PKGS) | tr " " "\n" | sort | uniq -d | tr "\n" " " | tr [:lower:] [:upper:])), \
 	$(call $(eval $(MVP)_VERSION=$(shell find $(PKG_DIR)/ -iname "$(MVP)*" -printf "%f" -quit | perl -p -e 's/$(REGEX)/\3/'))) \
@@ -66,8 +72,8 @@ $(foreach MVP, \
 EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS)))
 
 # Sort package names in variables for further use depending of their "standardness"
-STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
-STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS) $(PYTHON_PKGS), $(AVAILABLE_PKGS))
+STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE) $(PERL_PKGS) $(PYTHON_PKGS) $(NONSTD_MODULE_PKGS), $(AVAILABLE_PKGS))
+STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS) $(PYTHON_PKGS) $(NONSTD_MODULE_PKGS), $(AVAILABLE_PKGS))
 
 # Environment variables common to all package compilation
 ifeq ($(ARCH),88f628x)

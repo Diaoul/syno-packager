@@ -1,0 +1,9 @@
+diff -u a/pip b/pip
+--- a/pip	2011-05-29 01:01:11.000000000 +0200
++++ b/pip	2011-05-29 01:06:41.387304212 +0200
+@@ -1,4 +1,4 @@
+-#!%CORRECT_PATH%/Python/hostpython
++#!/usr/bin/env python
+ # EASY-INSTALL-ENTRY-SCRIPT: 'pip==1.0.1','console_scripts','pip'
+ __requires__ = 'pip==1.0.1'
+ import sys
