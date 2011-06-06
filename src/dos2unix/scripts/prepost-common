@@ -1,0 +1,98 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Directories
+D2UDIR=/usr/local/dos2unix
+D2UBIN=$D2UDIR/bin
+
+# Binaries
+D2UD2UEXE=$D2UBIN/dos2unix
+D2UU2DEXE=$D2UBIN/unix2dos
+D2UM2UEXE=$D2UBIN/mac2unix
+D2UU2MEXE=$D2UBIN/unix2mac
+
+preinst ()
+{
+	# Find the CPU architecture
+	synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+	arch=`echo $synoinfo | cut -d_ -f2`
+
+	# Check if the architecture is supported
+	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
+		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
+		exit 1
+	fi
+	exit 0
+}
+
+postinst ()
+{
+	# Create the view directory
+	mkdir -p $D2UDIR
+	mkdir -p /usr/local/bin
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/bin $D2UBIN
+
+	# Create symlinks
+	ln -s $D2UD2UEXE /usr/local/bin/dos2unix
+	ln -s $D2UU2DEXE /usr/local/bin/unix2dos
+	ln -s $D2UM2UEXE /usr/local/bin/mac2unix
+	ln -s $D2UU2MEXE /usr/local/bin/unix2mac
+
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Correct the files permission
+	chmod 755 $D2UBIN/*
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlink
+	rm -f /usr/local/bin/dos2unix
+	rm -f /usr/local/bin/unix2dos
+	rm -f /usr/local/bin/mac2unix
+	rm -f /usr/local/bin/unix2mac
+
+	# Remove symlinks from /usr/local/dos2unix
+	rm -f $D2UBIN
+
+	# Remove the view directory
+	rmdir $D2UDIR
+
+	exit 0
+}
+
+preupgrade ()
+{
+	exit 1
+}
+
+postupgrade ()
+{
+	exit 1
+}

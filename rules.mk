@@ -321,6 +321,8 @@ $(META_PKGS) $(NONSTD_MODULE_PKGS):%: $(OUT_DIR)/%/syno.install
 #
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 
+$(OUT_DIR)/dos2unix/syno.config: $(OUT_DIR)/dos2unix.unpack precomp/$(ARCH)
+
 $(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/libgcrypt/syno.config: $(OUT_DIR)/libgpg-error/syno.install $(OUT_DIR)/libgcrypt.unpack precomp/$(ARCH)
@@ -605,6 +607,11 @@ $(OUT_DIR)/busybox/syno.config: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
 # install rules              #
 ##############################
 #
+$(OUT_DIR)/dos2unix/syno.install: $(OUT_DIR)/dos2unix/syno.config
+	@echo $@ ----\> $^
+	make -C $(dir $@) CC="$(TARGET)-gcc" CPP="$(TARGET)-g++" STRIP="$(TARGET)-strip" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" prefix="" all install
+	touch $@
+
 $(OUT_DIR)/lxml/syno.install: $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/lxml.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
