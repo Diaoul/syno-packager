@@ -30,7 +30,7 @@ include variables.mk
 #
 # Package and dependencies definition
 INSTALL_PKG=Python
-INSTALL_DEPS=sqlite openssl zlib setuptools pip Markdown Cheetah pyOpenSSL yenc BeautifulSoup
+INSTALL_DEPS=sqlite openssl zlib setuptools pip Markdown Cheetah pyOpenSSL yenc BeautifulSoup lxml Cython
 COMPILE_DEPS=$(INSTALL_DEPS)
 
 # Cleanup
@@ -42,8 +42,11 @@ KEPT_INCS=python%
 DEL_INCS=
 KEPT_FOLDERS=bin lib include
 
+# Version overriding
+OPENSSL_VERSION=0.9.8
+
 # Optimisation flags
-OFLAGS=
+#OFLAGS=-O3
 
 
 ################

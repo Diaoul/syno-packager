@@ -323,6 +323,29 @@ $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/
 
 $(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
 
+$(OUT_DIR)/libgcrypt/syno.config: $(OUT_DIR)/libgpg-error/syno.install $(OUT_DIR)/libgcrypt.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	ac_cv_sys_symbol_underscore=no \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
+			--with-gpg-error-prefix=$(if $(filter libgpg-error, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	touch $@
+
+$(OUT_DIR)/libxslt/syno.config: $(OUT_DIR)/libgcrypt/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
+			--with-libxml-prefix=$(if $(filter libxml2, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" LIBGCRYPT_CONFIG="$(if $(filter libgcrypt, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/libgcrypt-config"
+	touch $@
+
 $(OUT_DIR)/libpar2/syno.config: $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libpar2.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/libpar2-0.2-bugfixes.patch
@@ -441,7 +464,7 @@ $(OUT_DIR)/protobuf-c/syno.config: $(OUT_DIR)/protobuf-c.unpack precomp/$(ARCH)
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $(OUT_DIR)/protobuf-c/syno.config
 
-$(OUT_DIR)/Python/host.install: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libffi/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
+$(OUT_DIR)/Python/host.install: $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libffi/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.1-hostcompile.patch
 	cd $(dir $@) && \
@@ -582,6 +605,20 @@ $(OUT_DIR)/busybox/syno.config: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
 # install rules              #
 ##############################
 #
+$(OUT_DIR)/lxml/syno.install: $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/lxml.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
+	cd $(dir $@) && \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
+	LDFLAGS="$(LDFLAGS)" \
+	CFLAGS="$(CFLAGS) -O1" \
+	../Python/hostpython setup.py build --with-xslt-config=$(if $(filter libxslt, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/xslt-config
+	cd $(dir $@) && \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
+	LDFLAGS="$(LDFLAGS)" \
+	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	touch $@
+
 $(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/pip.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
