@@ -24,7 +24,7 @@ preinst ()
 	arch=`echo $synoinfo | cut -d_ -f2`
 
 	# Check if the architecture is supported
-	if ! echo "$arch" | grep -q "88f5281"; then
+	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
 		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '88f5281'."
 		exit 1
 	fi
