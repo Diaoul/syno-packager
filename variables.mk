@@ -34,8 +34,8 @@ TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
 ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 
 # Non-standard package list
-NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c libgcrypt libxslt
-NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox
+NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c libgcrypt libxslt dos2unix
+NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox dos2unix
 
 # Modules part (Python & Perl supported)
 PERL_PKGS=Config-IniFiles
