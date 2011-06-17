@@ -43,7 +43,7 @@ PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope setuptools BeautifulSoup C
 NONSTD_MODULE_PKGS=pip lxml
 
 # Meta packages
-META_PKGS=toolbox
+META_PKGS=toolbox debian-chroot
 
 # Using arch-target.map to define some variables
 ARCHS=$(shell cat arch-target.map | cut -d: -f1)

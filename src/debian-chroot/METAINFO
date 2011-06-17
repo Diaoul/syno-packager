@@ -1,0 +1,5 @@
+SPK_DESC="Debian environment"
+SPK_MAINT="diaoulael@gmail.com"
+SPK_RELOADUI="yes"
+SPK_URL=""
+META_VERSION="0.1"

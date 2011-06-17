@@ -1,0 +1,105 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+DCDIR=/usr/local/debian-chroot
+DCBIN=$DCDIR/bin
+DCVAR=$DCDIR/var
+DCCRT=$DCDIR/chroottarget
+RPCRT=`realpath $DCCRT`
+CREXE=$DCBIN/chroot
+MOEXE=mount
+UMEXE=umount
+# Files
+DCLOG=$DCVAR/debian-chroot-spk.log
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting Debian Chroot..." >> $DCLOG
+
+	# Start Debian Chroot
+    $MOEXE --bind /proc $RPCRT/proc
+    $MOEXE --bind /dev/pts $RPCRT/dev/pts
+    $MOEXE --bind /sys $RPCRT/sys
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping Debian Chroot..." >> $DCLOG
+
+    # Stop Debian Chroot
+    $UMEXE $RPCRT/proc
+    $UMEXE $RPCRT/dev/pts
+    $UMEXE $RPCRT/sys
+}
+
+daemon_status ()
+{
+	`grep "/proc $RPCRT/proc " /proc/mounts > /dev/null 2>&1` || `grep "/dev/pts $RPCRT/dev/pts " /proc/mounts > /dev/null 2>&1` || `grep "/sys $RPCRT/sys " /proc/mounts > /dev/null 2>&1`
+}
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "Debian Chroot already running!"
+			exit 0
+		else
+			echo "Starting Debian Chroot..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping Debian Chroot..."
+		stop_daemon
+		exit $?
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	reload)
+		if daemon_status; then
+			reload_daemon
+		fi
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	chroot)
+		$CREXE $RPCRT /bin/bash
+		;;
+	log)
+		echo $DCLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

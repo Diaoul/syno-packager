@@ -789,3 +789,11 @@ $(OUT_DIR)/ncurses/syno.terminfo: $(OUT_DIR)/ncurses/syno.install
 	touch $@
 
 $(OUT_DIR)/toolbox.install: $(OUT_DIR)/Config-IniFiles/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/procps/syno.install $(OUT_DIR)/par2cmdline/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement
+
+$(OUT_DIR)/debian-chroot/syno.install:
+	@echo $@ ----\> $^
+	mkdir -p $(dir $@)
+	mkdir -p  $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
+	sudo debootstrap --foreign --arch $(DEBIANCHROOT_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
+	touch $@
+
