@@ -43,6 +43,7 @@ DEL_INCS=
 KEPT_FOLDERS=bin lib include
 
 # Version overriding
+PYTHON_VERSION=2.7.2
 OPENSSL_VERSION=0.9.8
 
 # Optimisation flags

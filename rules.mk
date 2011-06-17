@@ -468,7 +468,6 @@ $(OUT_DIR)/protobuf-c/syno.config: $(OUT_DIR)/protobuf-c.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/Python/host.install: $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libffi/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
-	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.1-hostcompile.patch
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --with-zlib=/usr/include
@@ -479,7 +478,7 @@ $(OUT_DIR)/Python/host.install: $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/libxm
 
 $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
 	@echo $@ ----\> $^
-	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.1-xcompile.patch
+	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.2-xcompile.patch
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
