@@ -19,7 +19,7 @@
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
 # Default arch
-ARCH?=88f5281
+ARCH?=88f628x
 
 # Directories
 ifeq ($(ARCH),all)
