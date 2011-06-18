@@ -16,12 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-#################
-# Specific arch #
-#################
-#
-DEBIANCHROOT_ARCH=armel
-
 
 ####################
 # Import variables #
@@ -48,6 +42,11 @@ DEL_LIBS=
 KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=bin var chroottarget
+
+# Turn sudo cp/rm/tar on
+CP_SUDO=yes
+RM_SUDO=yes
+TAR_SUDO=yes
 
 
 ################

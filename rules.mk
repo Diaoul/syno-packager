@@ -34,8 +34,12 @@ $(ARCHS): out
 
 spk:
 	@echo -n "Making SPK $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
+ifeq ($(RM_SUDO),yes)
+	@sudo rm -rf $(OUT_DIR)/spk
+else
 	@rm -rf $(OUT_DIR)/spk
-	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
+endif
+	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) CP_SUDO=$(CP_SUDO) RM_SUDO=$(RM_SUDO) TAR_SUDO=$(TAR_SUDO) \
 	./src/buildspk.sh
 	@echo " ok"
 
@@ -116,6 +120,12 @@ tests: gcc-version
 	@echo "	SPK_NAME			$(SPK_NAME)"
 	@echo "	SPK_VERSION			$(SPK_VERSION)"
 	@echo "	SPK_ARCH			$(SPK_ARCH)"
+	@echo ""
+	@echo "Miscleaneous :"
+	@echo "	CP_SUDO				$(CP_SUDO)"
+	@echo "	RM_SUDO				$(RM_SUDO)"
+	@echo "	TAR_SUDO			$(TAR_SUDO)"
+	@echo "	DEBIAN_ARCH			$(DEBIAN_ARCH)"
 
 help:
 	@echo "usage: make [ARCH=] COMMAND"
@@ -155,13 +165,21 @@ gcc-version: precomp/$(ARCH)
 
 # Cleaning rules
 clean:
+ifeq ($(RM_SUDO),yes)
+	sudo rm -rf $(OUT_DIR)
+else
 	rm -rf $(OUT_DIR)
+endif
 
 cleanstatus:
 	rm -f out/logs/status.log
 
 cleanall:
+ifeq ($(RM_SUDO),yes)
+	sudo rm -rf out
+else
 	rm -rf out
+endif
 
 realclean: cleanall
 	rm -rf precomp
@@ -793,6 +811,6 @@ $(OUT_DIR)/debian-chroot/syno.install:
 	@echo $@ ----\> $^
 	mkdir -p $(dir $@)
 	mkdir -p  $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
-	sudo debootstrap --foreign --arch $(DEBIANCHROOT_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
+	sudo debootstrap --foreign --arch $(DEBIAN_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
 	touch $@
 

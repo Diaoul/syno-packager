@@ -77,12 +77,22 @@ sed -i -e "s/%SPK_ARCH%/$SPK_TEST_ARCH/g" $SPK_DIR/scripts/*
 # Copy target and add all stuff from ROOT
 mkdir -p $SPK_DIR/target
 cp -R src/$SPK_NAME/target/* $SPK_DIR/target
-cp -R $OUT_DIR_ARCH/root/* $SPK_DIR/target
+if [ "$CP_SUDO" = "yes" ]; then
+	CP_EXE="sudo cp"
+else
+	CP_EXE="cp"
+fi
+$CP_EXE -R $OUT_DIR_ARCH/root/* $SPK_DIR/target
 
 # Create the SPK file name
 SPK_FILENAME=${SPK_NAME}-${SPK_VERSION}-${META_VERSION}-${SPK_ARCH}.spk
 
 # Make the spk
-cd $SPK_DIR/target && tar czf $SPK_DIR/package.tgz *
+if [ "$TAR_SUDO" = "yes" ]; then
+	TAR_EXE="sudo tar"
+else
+	TAR_EXE="tar"
+fi
+cd $SPK_DIR/target && $TAR_EXE czf $SPK_DIR/package.tgz *
 cd $SPK_DIR && tar cf $OUT_DIR/$SPK_FILENAME INFO package.tgz scripts
 
