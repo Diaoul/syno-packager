@@ -197,9 +197,9 @@ spk-clean:
 	@echo -n "Removing binaries in DEL_BINS... "
 	@cd $(ROOT)/bin/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_BINS), $(notdir $(wildcard $(ROOT)/bin/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing libraries not in KEPT_LIBS... "
-	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf  $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing libraries in DEL_LIBS... "
-	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf  $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@cd $(ROOT)/lib/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_LIBS), $(notdir $(wildcard $(ROOT)/lib/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing includes not in KEPT_INCS... "
 	@cd $(ROOT)/include/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing includes in DEL_INCS... "
@@ -446,7 +446,7 @@ $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)
 	./configure --prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) --static --shared
 	touch $(OUT_DIR)/zlib/syno.config
 
-$(OUT_DIR)/curl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl/syno.install  $(OUT_DIR)/curl.unpack precomp/$(ARCH)
+$(OUT_DIR)/curl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/curl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(OUT_DIR)/curl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -799,7 +799,7 @@ $(OUT_DIR)/busybox/syno.lightusermanagement: $(OUT_DIR)/busybox.unpack precomp/$
 
 $(OUT_DIR)/ncurses/syno.terminfo: $(OUT_DIR)/ncurses/syno.install
 	@echo $@ ----\> $^
-	mkdir -p  $(ROOT)/share/terminfo
+	mkdir -p $(ROOT)/share/terminfo
 	cp -R $(TEMPROOT)/share/terminfo $(ROOT)/share/terminfo
 	touch $@
 
@@ -808,7 +808,7 @@ $(OUT_DIR)/toolbox.install: $(OUT_DIR)/Config-IniFiles/syno.install $(OUT_DIR)/u
 $(OUT_DIR)/debian-chroot/syno.install:
 	@echo $@ ----\> $^
 	mkdir -p $(dir $@)
-	mkdir -p  $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
 	sudo debootstrap --foreign --arch $(DEBIAN_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
 	touch $@
 
