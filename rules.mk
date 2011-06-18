@@ -653,20 +653,18 @@ $(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install $(OUT_DIR)/Pytho
 	sed -e "s|%CORRECT_PATH%|$(CUR_DIR)/$(OUT_DIR)|g" $(EXT_DIR)/others/pip-1.0.1-syno.tmpl.patch | patch -d $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin -p1
 	touch $@
 
-$(OUT_DIR)/CouchPotato.install:
+$(OUT_DIR)/CouchPotato/syno.install:
 	@echo $@ ----\> $^
-	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	cd $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/RuudBurger/CouchPotato.git
-	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/CouchPotato/.git*
-	touch $@
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/RuudBurger/CouchPotato.git
+	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/CouchPotato/.git*
 
-$(OUT_DIR)/SickBeard.install:
+$(OUT_DIR)/SickBeard/syno.install:
 	@echo $@ ----\> $^
-	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	cd $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/midgetspy/Sick-Beard.git
-	mv $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard
-	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard/.git*
-	touch $@
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/midgetspy/Sick-Beard.git
+	mv $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard
+	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard/.git*
 
 $(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/SABnzbd.unpack
 	@echo $@ ----\> $^
