@@ -47,6 +47,8 @@ KEPT_INCS=
 DEL_INCS=
 KEPT_FOLDERS=SABnzbd var share
 
+# Version overriding
+SABNZBD_VERSION=0.6.5
 
 ################
 # Import rules #

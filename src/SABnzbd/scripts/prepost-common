@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+UPGRADELOCK=/tmp/SABnzbd.upgrade.lock
+
 preinst ()
 {
 	# Check if Python is installed
@@ -24,7 +26,7 @@ preinst ()
 		echo "Python SPK is not installed. Install it and try again."
 		exit 1
 	fi
-	
+
 	# Check if toolbox is installed
 	if [ ! -d /usr/local/toolbox ]; then
 		echo "toolbox SPK is not installed. Install it and try again."
@@ -47,6 +49,11 @@ postinst ()
 
 	# Create SABnzbd specific user
 	/usr/local/bin/adduser sabnzbduser -h "/usr/local/SABnzbd/var" -s "/sbin/nologin" -G "users" -D -H
+	
+	# Restore the config file if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		mv /tmp/config.ini ${SYNOPKG_PKGDEST}/etc/
+	fi
 
 	# Correct the files ownership
 	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
@@ -60,8 +67,15 @@ postinst ()
 
 preuninst ()
 {
-	# Remove the user
-	/usr/local/bin/deluser sabnzbduser
+	# Remove the user if we're not upgrading
+	if [ ! -f $UPGRADELOCK ]; then
+		/usr/local/bin/deluser sabnzbduser
+	fi
+
+	# Save the config file if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		cp ${SYNOPKG_PKGDEST}/etc/config.ini /tmp/
+	fi
 
 	exit 0
 }
@@ -82,10 +96,14 @@ postuninst ()
 
 preupgrade ()
 {
-	exit 1
+	touch $UPGRADELOCK
+
+	exit 0
 }
 
 postupgrade ()
 {
-	exit 1
+	rm -f $UPGRADELOCK
+
+	exit 0
 }
