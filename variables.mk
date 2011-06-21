@@ -51,6 +51,8 @@ MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
 CC_PATH=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)
 DEBIAN_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 6)
+OPTWARE_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 7)
+OPTWARE_ARCHS=$(shell cat arch-target.map | cut -d: -f7)
 
 # Define a magical regex to parse packages
 REGEX=^([\+\w-]*?)(-autoconf)?-?([0-9][0-9.a-zRC]+(-pre[0-9])?)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2|zip)$$

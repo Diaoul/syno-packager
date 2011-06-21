@@ -10,3 +10,6 @@ ext/packages/*.zip
 # Outputs #
 out/
 precomp/
+
+# Optware #
+optware/
