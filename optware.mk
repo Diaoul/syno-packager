@@ -28,4 +28,9 @@ optware-%: optware
 	$(MAKE) -C optware $*-ipk
 
 optware-install-%: optware-%
-	cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
+	@ls -A optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/ > /dev/null 2>&1 && for f in optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/*; \
+	do \
+		echo -n "Changing rpath for `basename $$f`..."; \
+		chrpath -r /usr/local/$(INSTALL_PKG)/lib $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
+	done || echo "No changes of rpath needed"
+	@cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
