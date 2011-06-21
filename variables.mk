@@ -34,8 +34,8 @@ TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
 ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 
 # Non-standard package list
-NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c libgcrypt libxslt dos2unix
-NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox dos2unix
+NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl psmisc sysvinit coreutils util-linux git curl par2cmdline procps libxml2 nzbget libsigc++ libpar2 polarssl shadow busybox protobuf-c libgcrypt libxslt dos2unix perl
+NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox dos2unix perl
 
 # Modules part (Python & Perl supported)
 PERL_PKGS=Config-IniFiles
@@ -51,7 +51,7 @@ MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
 CC_PATH=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)
 DEBIAN_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 6)
-OPTWARE_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 7)
+OPTWARE_ARCH:=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 7)
 OPTWARE_ARCHS=$(shell cat arch-target.map | cut -d: -f7)
 
 # Define a magical regex to parse packages

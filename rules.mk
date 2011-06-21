@@ -817,4 +817,3 @@ $(OUT_DIR)/debian-chroot/syno.install:
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
 	sudo debootstrap --foreign --arch $(DEBIAN_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
 	touch $@
-
