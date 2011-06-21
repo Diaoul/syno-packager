@@ -22,12 +22,15 @@ DCDIR=/usr/local/debian-chroot
 DCBIN=$DCDIR/bin
 DCVAR=$DCDIR/var
 DCCRT=$DCDIR/chroottarget
+TMPDIR=`echo ${SYNOPKG_PKGDEST} | perl -p -e 's|^(/volume\d).*$|$1|'`/@tmp
 
 # Binaries
 CREXE=$DCBIN/chroot
 
 # Files
 DCLOG=$DCVAR/debian-chroot-spk.log
+UPGRADELOCK=/tmp/debian-chroot.upgrade.lock
+
 
 preinst ()
 {
@@ -63,24 +66,34 @@ postinst ()
 	# Correct the files permission
 	chmod 777 $DCBIN/*
 
-	# Debootstrap second stage and configure the chroot environment
-	$CREXE $DCCRT /debootstrap/debootstrap --second-stage > $DCLOG
-	mkdir -p $DCCRT/proc
-	mkdir -p $DCCRT/dev/pts
-	mkdir -p $DCCRT/sys
-	chmod 666 $DCCRT/dev/null
-	chmod 777 $DCCRT/tmp
-	cp /etc/hosts /etc/hostname /etc/resolv.conf $DCCRT/etc/
-	echo "deb http://ftp.fr.debian.org/debian/ squeeze main contrib non-free" > $DCCRT/etc/apt/sources.list
-	echo "deb http://security.debian.org/ squeeze/updates main contrib non-free" >> $DCCRT/etc/apt/sources.list
-	echo "#!/bin/sh" > $DCCRT/usr/sbin/policy-rc.d
-	echo "exit 101" >> $DCCRT/usr/sbin/policy-rc.d
+	# Restore the debian chroot if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		rm -rf ${SYNOPKG_PKGDEST}/chroottarget/
+		mv $TMPDIR/chroottarget.bak/ ${SYNOPKG_PKGDEST}/chroottarget/
+	else # Debootstrap second stage and configure the chroot environment
+		$CREXE $DCCRT /debootstrap/debootstrap --second-stage > $DCLOG 2>&1
+		mkdir -p $DCCRT/proc
+		mkdir -p $DCCRT/dev/pts
+		mkdir -p $DCCRT/sys
+		chmod 666 $DCCRT/dev/null
+		chmod 777 $DCCRT/tmp
+		cp /etc/hosts /etc/hostname /etc/resolv.conf $DCCRT/etc/
+		echo "deb http://ftp.fr.debian.org/debian/ squeeze main contrib non-free" > $DCCRT/etc/apt/sources.list
+		echo "deb http://security.debian.org/ squeeze/updates main contrib non-free" >> $DCCRT/etc/apt/sources.list
+		echo "#!/bin/sh" > $DCCRT/usr/sbin/policy-rc.d
+		echo "exit 101" >> $DCCRT/usr/sbin/policy-rc.d
+	fi
 
 	exit 0
 }
 
 preuninst ()
 {
+	# Save the debian chroot if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		mv ${SYNOPKG_PKGDEST}/chroottarget/ $TMPDIR/chroottarget.bak/
+	fi
+
 	exit 0
 }
 
@@ -102,10 +115,14 @@ postuninst ()
 
 preupgrade ()
 {
-	exit 1
+	touch $UPGRADELOCK
+
+	exit 0
 }
 
 postupgrade ()
 {
-	exit 1
+	rm -f $UPGRADELOCK
+
+	exit 0
 }
