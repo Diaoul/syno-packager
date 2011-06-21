@@ -56,6 +56,9 @@ postinst ()
 	if [ -f $UPGRADELOCK ]; then
 		mv /tmp/config.ini ${SYNOPKG_PKGDEST}/SickBeard/
 		mv /tmp/sickbeard.db ${SYNOPKG_PKGDEST}/SickBeard/
+		if [ -f /tmp/autoProcessTV.cfg ]; then
+			cp /tmp/autoProcessTV.cfg ${SYNOPKG_PKGDEST}/SickBeard/autoProcessTV/
+		fi
 	fi
 
 	# Correct the files ownership
@@ -73,6 +76,9 @@ preuninst ()
 	if [ -f $UPGRADELOCK ]; then
 		cp ${SYNOPKG_PKGDEST}/SickBeard/config.ini /tmp/
 		cp ${SYNOPKG_PKGDEST}/SickBeard/sickbeard.db /tmp/
+		if [ -f ${SYNOPKG_PKGDEST}/SickBeard/autoProcessTV/autoProcessTV.cfg ]; then
+			cp ${SYNOPKG_PKGDEST}/SickBeard/autoProcessTV/autoProcessTV.cfg /tmp/
+		fi
 	fi
 
 	exit 0
