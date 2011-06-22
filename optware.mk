@@ -31,11 +31,11 @@ optware-%: optware
 	cd optware/$(OPTWARE_ARCH)/ && $(MAKE) directories ipkg-utils toolchain $*
 
 install-optware-%: optware-%-ipk
+	@mkdir -p $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
+	@cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/ > /dev/null 2>&1 && echo "Files copied for $*" || echo "Nothing to copy for $*"
 	@ls -A optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/ > /dev/null 2>&1 && for f in optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/*; \
 	do \
 		echo -n "Changing rpath for `basename $$f`..."; \
-		chrpath -r /usr/local/$(INSTALL_PKG)/lib $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
+		chrpath -r /usr/local/$(INSTALL_PKG)/lib $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/`basename $$f` > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
 	done || echo "No changes of rpath needed"
-	mkdir -p $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
-	cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/ || echo "Nothing to copy"
 

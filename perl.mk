@@ -32,30 +32,32 @@ INSTALL_PKG=perl
 INSTALL_DEPS=perl-dbi perl-dbd-sqlite
 
 # Cleanup
-KEPT_BINS=
+KEPT_BINS=%
 DEL_BINS=
-KEPT_LIBS=
+KEPT_LIBS=%
 DEL_LIBS=
-KEPT_INCS=
+KEPT_INCS=%
 DEL_INCS=
-KEPT_FOLDERS=bin lib include
+KEPT_FOLDERS=bin lib CORE
 
-###########
-# Optware #
-###########
+################
+# Import rules #
+################
 #
-include optware.mk
+include rules.mk
 
 
 ################
 # Custom rules #
 ################
 #
-override ARCH=
 perl: install-optware-perl install-optware-perl-dbi install-optware-perl-dbd-sqlite
 	@ls -A $(ROOT)/bin/ > /dev/null 2>&1 && for f in $(ROOT)/bin/*; \
 	do \
-		echo -n "Changing script header for `basename $$f`..."; \
+		echo -n "Changing references to /opt/ in `basename $$f`..."; \
 		sed -i "s|/opt/bin|/usr/local/$(INSTALL_PKG)/bin|g" $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
 	done || echo "No changes done to files headers"
-
+	@echo -n "Creating symlink to CORE"
+	@cd $(ROOT) && ln -s $(shell chrpath -l optware/$(OPTWARE_ARCH)/builds/perl-*-ipk/opt/bin/perl | sed "s|^.*:/opt/lib/\(.*\)$$|lib/\1|") CORE > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Changing rpath of perl..."
+	@chrpath -r /usr/local/$(INSTALL_PKG)/lib/:/usr/local/$(INSTALL_PKG)/CORE $(ROOT)/bin/perl > /dev/null 2>&1 && echo " ok" || echo " failed!"
