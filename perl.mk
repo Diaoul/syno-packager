@@ -51,6 +51,9 @@ include rules.mk
 # Custom rules #
 ################
 #
+patch-perl:
+	
+
 perl: install-optware-perl install-optware-perl-dbi install-optware-perl-dbd-sqlite
 	@ls -A $(ROOT)/bin/ > /dev/null 2>&1 && for f in $(ROOT)/bin/*; \
 	do \
@@ -58,6 +61,7 @@ perl: install-optware-perl install-optware-perl-dbi install-optware-perl-dbd-sql
 		sed -i "s|/opt/bin|/usr/local/$(INSTALL_PKG)/bin|g" $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
 	done || echo "No changes done to files headers"
 	@echo -n "Creating symlink to CORE"
-	@cd $(ROOT) && ln -s $(shell chrpath -l optware/$(OPTWARE_ARCH)/builds/perl-*-ipk/opt/bin/perl | sed "s|^.*:/opt/lib/\(.*\)$$|lib/\1|") CORE > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@cd $(ROOT) && ln -s $(shell chrpath -l optware/$(OPTWARE_ARCH)/builds/perl-*-ipk/usr/local/perl/bin/perl | sed "s|^.*:/opt/lib/\(.*\)$$|lib/\1|") CORE > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Changing rpath of perl..."
 	@chrpath -r /usr/local/$(INSTALL_PKG)/lib/:/usr/local/$(INSTALL_PKG)/CORE $(ROOT)/bin/perl > /dev/null 2>&1 && echo " ok" || echo " failed!"
+
