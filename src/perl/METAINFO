@@ -1,0 +1,6 @@
+SPK_DESC="Perl (used by other SPKs)"
+SPK_MAINT="diaoulael@gmail.com"
+SPK_RELOADUI="yes"
+SPK_URL=""
+SPK_PORT=
+META_VERSION="0.1"

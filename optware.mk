@@ -23,14 +23,20 @@
 optware:
 	svn co http://svn.nslu2-linux.org/svnroot/optware/trunk optware
 
-optware-%: optware
-	OPTWARE_TARGET=$(OPTWARE_ARCH)
-	$(MAKE) -C optware $*-ipk
+optware-update:
+	cd optware/ ; svn up
 
-optware-install-%: optware-%
+optware-%: optware
+	$(MAKE) -C optware/ $(OPTWARE_ARCH)-target
+	cd optware/$(OPTWARE_ARCH)/ && $(MAKE) directories ipkg-utils toolchain $*
+
+install-optware-%: optware-%-ipk
+	@mkdir -p $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
+	@cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/ > /dev/null 2>&1 && echo "Files copied for $* (/opt)" || echo "Nothing to copy for $* (/opt)"
+	@cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/usr/local/perl/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/ > /dev/null 2>&1 && echo "Files copied for $* (/usr/local/$(INSTALL_PKG))" || echo "Nothing to copy for $* (/usr/local/$(INSTALL_PKG)"
 	@ls -A optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/ > /dev/null 2>&1 && for f in optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/bin/*; \
 	do \
 		echo -n "Changing rpath for `basename $$f`..."; \
-		chrpath -r /usr/local/$(INSTALL_PKG)/lib $$f > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
+		chrpath -r /usr/local/$(INSTALL_PKG)/lib $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/`basename $$f` > /dev/null 2>&1 && echo " ok" || echo " failed!"; \
 	done || echo "No changes of rpath needed"
-	@cp -R optware/$(OPTWARE_ARCH)/builds/$*-*-ipk/opt/* $(if $(filter $*, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/
+
