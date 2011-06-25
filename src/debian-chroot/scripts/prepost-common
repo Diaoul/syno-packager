@@ -22,7 +22,10 @@ DCDIR=/usr/local/debian-chroot
 DCBIN=$DCDIR/bin
 DCVAR=$DCDIR/var
 DCCRT=$DCDIR/chroottarget
+DCSHR=$DCDIR/share
+DCMGR=$DCDIR/manager
 TMPDIR=`echo ${SYNOPKG_PKGDEST} | perl -p -e 's|^(/volume\d).*$|$1|'`/@tmp
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Binaries
 CREXE=$DCBIN/chroot
@@ -43,6 +46,13 @@ preinst ()
 		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
 		exit 1
 	fi
+
+	# Check if perl is installed
+	if [ ! -d /usr/local/perl ]; then
+		echo "perl SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
 	exit 0
 }
 
@@ -56,12 +66,21 @@ postinst ()
 	ln -s ${SYNOPKG_PKGDEST}/bin $DCBIN
 	ln -s ${SYNOPKG_PKGDEST}/var $DCVAR
 	ln -s ${SYNOPKG_PKGDEST}/chroottarget $DCCRT
+	ln -s ${SYNOPKG_PKGDEST}/share $DCSHR
+	ln -s ${SYNOPKG_PKGDEST}/manager $DCMGR
 
 	# Create symlinks
 	ln -s $CREXE /usr/local/bin/chroot
 
 	# Correct the files ownership
 	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/debian-chroot
+		ln -s $DCSHR/3rdparty $SYNO3APP/debian-chroot
+	fi
 
 	# Correct the files permission
 	chmod 777 $DCBIN/*
@@ -70,6 +89,7 @@ postinst ()
 	if [ -f $UPGRADELOCK ]; then
 		rm -rf ${SYNOPKG_PKGDEST}/chroottarget/
 		mv $TMPDIR/chroottarget.bak/ ${SYNOPKG_PKGDEST}/chroottarget/
+		mv $TMPDIR/manager.db ${SYNOPKG_PKGDEST}/manager/
 	else # Debootstrap second stage and configure the chroot environment
 		$CREXE $DCCRT /debootstrap/debootstrap --second-stage > $DCLOG 2>&1
 		mkdir -p $DCCRT/proc
@@ -91,6 +111,7 @@ preuninst ()
 {
 	# Save the debian chroot if we're upgrading
 	if [ -f $UPGRADELOCK ]; then
+		cp ${SYNOPKG_PKGDEST}/manager/manager.db $TMPDIR/
 		mv ${SYNOPKG_PKGDEST}/chroottarget/ $TMPDIR/chroottarget.bak/
 	fi
 
@@ -101,11 +122,19 @@ postuninst ()
 {
 	# Remove symlink
 	rm -f /usr/local/bin/chroot
+	
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/debian-chroot ]
+	then
+		rm -f $SYNO3APP/debian-chroot
+	fi
 
 	# Remove symlinks from /usr/local/debian-chroot
 	rm -f $DCBIN
 	rm -f $DCVAR
 	rm -f $DCCRT
+	rm -f $DCSHR
+	rm -f $DCMGR
 
 	# Remove the view directory
 	rmdir $DCDIR

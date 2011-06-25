@@ -1,0 +1,12 @@
+{
+	".url": {
+		"fr.diaoul.debian.chroot.manager": {
+			"title": "Chroot Manager",
+			"desc": "Manage your chroot with ease",
+			"icon": "images/icon_{0}.png",
+			"type": "legacy",
+			"url": "3rdparty/debian-chroot/index.cgi",
+			"allUsers": false
+		}
+	}
+}

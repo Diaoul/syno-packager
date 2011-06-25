@@ -41,7 +41,7 @@ KEPT_LIBS=
 DEL_LIBS=
 KEPT_INCS=
 DEL_INCS=
-KEPT_FOLDERS=bin var chroottarget
+KEPT_FOLDERS=bin var chroottarget share manager
 
 # Turn sudo cp/rm/tar on
 CP_SUDO=yes
