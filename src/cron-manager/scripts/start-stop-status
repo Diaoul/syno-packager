@@ -1,0 +1,100 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+CMDIR=/usr/local/cron-manager
+CMVAR=$CMDIR/var
+
+# Files
+CMLOG=$CMVAR/cron-manager-spk.log
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting Cron Manager..." >> $CMLOG
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/cron-manager
+		ln -s $CMSHR/3rdparty $SYNO3APP/cron-manager
+	fi
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping Cron Manager..." >> $CMLOG
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/cron-manager ]
+	then
+		rm -f $SYNO3APP/cron-manager
+	fi
+}
+
+daemon_status ()
+{
+	[ -h $SYNO3APP/cron-manager ]
+}
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "Cron Manager already running!"
+			exit 0
+		else
+			echo "Starting Cron Manager..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping Cron Manager..."
+		stop_daemon
+		exit $?
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	reload)
+		if daemon_status; then
+			reload_daemon
+		fi
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $CMLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

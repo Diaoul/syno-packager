@@ -1,0 +1,12 @@
+{
+	".url": {
+		"fr.diaoul.cron.manager": {
+			"title": "Cron Manager",
+			"desc": "Manage your cron tasks with ease",
+			"icon": "images/icon_{0}.png",
+			"type": "legacy",
+			"url": "3rdparty/cron-manager/index.cgi",
+			"allUsers": false
+		}
+	}
+}
