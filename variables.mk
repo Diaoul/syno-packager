@@ -19,7 +19,7 @@
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
 # Default arch
-SPARCH?=88f5281
+SPARCH?=88f628x
 ARCH?=$(SPARCH)
 
 # Directories
@@ -39,7 +39,7 @@ NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi 
 NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl psmisc sysvinit util-linux coreutils procps libxml2 libsigc++ openssl libpar2 nzbgetweb busybox dos2unix perl
 
 # Modules part (Python & Perl supported)
-PERL_PKGS=Config-IniFiles
+PERL_PKGS=Config-IniFiles Config-Crontab
 PYTHON_PKGS=Markdown Cheetah pyOpenSSL yenc periscope setuptools BeautifulSoup Cython
 NONSTD_MODULE_PKGS=pip lxml
 
@@ -81,10 +81,10 @@ STD_PKGS_INSTALL=$(filter-out $(NONSTD_PKGS_INSTALL) $(PERL_PKGS) $(PYTHON_PKGS)
 
 # Environment variables common to all package compilation
 ifeq ($(ARCH),88f628x)
-	EXTRA_ARM_CFLAGS=-mfloat-abi=soft
+	EXTRA_ARM_CFLAGS=-mfloat-abi=soft -DL_ENDIAN
 endif
 ifeq ($(ARCH),88f5281)
-	EXTRA_ARM_CFLAGS=-mfloat-abi=soft
+	EXTRA_ARM_CFLAGS=-mfloat-abi=soft -DL_ENDIAN
 endif
 PATH:=$(CUR_DIR)/$(CC_PATH)/bin:$(PATH)
 PKG_CONFIG_PATH=$(ROOT)/lib/pkgconfig:$(TEMPROOT)/lib/pkgconfig

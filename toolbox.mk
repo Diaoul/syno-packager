@@ -30,16 +30,16 @@ include variables.mk
 #
 # Package and dependencies definition
 INSTALL_PKG=toolbox
-INSTALL_DEPS=Config-IniFiles util-linux coreutils procps par2cmdline busybox
+INSTALL_DEPS=Config-Crontab Config-IniFiles util-linux coreutils procps par2cmdline busybox
 
 # Cleanup
 KEPT_BINS=nice renice ionice ps par2% busybox adduser deluser
 DEL_BINS=
-KEPT_LIBS=
+KEPT_LIBS=%
 DEL_LIBS=%.a %.la %.sh pkgconfig
 KEPT_INCS=
 DEL_INCS=
-KEPT_FOLDERS=bin
+KEPT_FOLDERS=bin lib
 
 # Optimisation flags
 OFLAGS=-O2

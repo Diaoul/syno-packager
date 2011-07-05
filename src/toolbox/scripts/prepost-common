@@ -39,6 +39,7 @@ postinst ()
 
 	# Create symlinks to the installation ditectory
 	ln -s ${SYNOPKG_PKGDEST}/bin /usr/local/toolbox/bin
+	ln -s ${SYNOPKG_PKGDEST}/lib /usr/local/toolbox/lib
 
 	# Correct the files ownership
 	chown -R root:root ${SYNOPKG_PKGDEST}
@@ -84,6 +85,7 @@ postuninst ()
 
 	# Remove symlinks from /usr/local/toolbox
 	rm -f /usr/local/toolbox/bin
+	rm -f /usr/local/toolbox/lib
 
 	# Remove the view directory
 	rmdir /usr/local/toolbox
@@ -93,10 +95,10 @@ postuninst ()
 
 preupgrade ()
 {
-	exit 1
+	exit 0
 }
 
 postupgrade ()
 {
-	exit 1
+	exit 0
 }
