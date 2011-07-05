@@ -440,7 +440,7 @@ ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),0.9.8)
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./Configure --prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			zlib-dynamic shared \
-			"syno:$(TARGET)-gcc:-O3 $(CFLAGS)::(unknown)::-ldl $(LDFLAGS):BN_LLONG::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
+			"syno:$(TARGET)-gcc:$(CFLAGS) -DTERMIO -fomit-frame-pointer -Wall::-D_REENTRANT::-ldl $(LDFLAGS):BN_LLONG DES_RISC1::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 endif
 	touch $(OUT_DIR)/openssl/syno.config
 
