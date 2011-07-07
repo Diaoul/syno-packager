@@ -24,7 +24,7 @@ DCVAR=$DCDIR/var
 DCCRT=$DCDIR/chroottarget
 DCSHR=$DCDIR/share
 DCMGR=$DCDIR/manager
-TMPDIR=`echo ${SYNOPKG_PKGDEST} | perl -p -e 's|^(/volume\d).*$|$1|'`/@tmp
+TMPDIR=`realpath ${SYNOPKG_PKGDEST} | perl -p -e 's|^(/volume\d).*$|$1|'`/@tmp
 SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Binaries
@@ -90,6 +90,8 @@ postinst ()
 		rm -rf ${SYNOPKG_PKGDEST}/chroottarget/
 		mv $TMPDIR/chroottarget.bak/ ${SYNOPKG_PKGDEST}/chroottarget/
 		mv $TMPDIR/manager.db ${SYNOPKG_PKGDEST}/manager/
+		mv $TMPDIR/debian-chroot-spk.log $DCLOG
+		echo "Upgrade - debian-chroot recovered from $TMPDIR" >> $DCLOG
 	else # Debootstrap second stage and configure the chroot environment
 		$CREXE $DCCRT /debootstrap/debootstrap --second-stage > $DCLOG 2>&1
 		mkdir -p $DCCRT/proc
@@ -103,6 +105,7 @@ postinst ()
 		echo "deb http://security.debian.org/ squeeze/updates main contrib non-free" >> $DCCRT/etc/apt/sources.list
 		echo "#!/bin/sh" > $DCCRT/usr/sbin/policy-rc.d
 		echo "exit 101" >> $DCCRT/usr/sbin/policy-rc.d
+		echo "Install - debian-chroot is now installed" > $DCLOG
 	fi
 
 	exit 0
@@ -113,7 +116,9 @@ preuninst ()
 	# Save the debian chroot if we're upgrading
 	if [ -f $UPGRADELOCK ]; then
 		cp ${SYNOPKG_PKGDEST}/manager/manager.db $TMPDIR/
+		cp $DCLOG $TMPDIR/
 		mv ${SYNOPKG_PKGDEST}/chroottarget/ $TMPDIR/chroottarget.bak/
+		echo "Upgrade - debian-chroot moved to $TMPDIR" >> $TMPDIR/debian-chroot-spk.log
 	fi
 
 	exit 0
