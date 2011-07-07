@@ -19,7 +19,9 @@
 
 # Common
 CMDIR=/usr/local/cron-manager
+CMSHR=$CMDIR/share
 CMVAR=$CMDIR/var
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Files
 CMLOG=$CMVAR/cron-manager-spk.log
