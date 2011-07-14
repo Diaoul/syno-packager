@@ -23,7 +23,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
 
 # Import Config::IniFiles module
-use lib "/usr/local/SABnzbd/lib/perl5";
+use lib "/usr/local/toolbox/lib/perl5";
 use Config::IniFiles;
 
 # Const
