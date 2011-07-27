@@ -1,0 +1,12 @@
+{
+	".url": {
+		"fr.diaoul.cfe": {
+			"title": "CFE",
+			"desc": "Config File Editor",
+			"icon": "images/icon_{0}.png",
+			"type": "legacy",
+			"url": "3rdparty/CFE/index.cgi",
+			"allUsers": false
+		}
+	}
+}

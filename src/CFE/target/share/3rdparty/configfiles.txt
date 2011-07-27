@@ -1,0 +1,15 @@
+#####################################
+# Configfile for 'Config File Editor' 
+# 
+# format:
+# full path to file,name to display
+#####################################
+
+/etc/ssh/sshd_config,sshd
+/usr/syno/etc/php.ini,php
+/usr/syno/apache/conf/httpd.conf-user,apache-user
+/usr/syno/etc/smb.conf,samba Daemon
+/etc/inetd.conf,inetd.conf
+/etc/profile,profile
+/etc/hosts,hosts
+/etc/crontab,crontab

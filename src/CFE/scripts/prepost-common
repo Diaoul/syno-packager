@@ -1,0 +1,75 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+CFEDIR=/usr/local/CFE
+CFESHR=$CFEDIR/share
+CFEVAR=$CFEDIR/var
+UPGRADELOCK=/tmp/CFE.upgrade.lock
+
+preinst ()
+{
+	exit 0
+}
+
+postinst ()
+{
+	# Create the view directory
+	mkdir -p $CFEDIR
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/share $CFESHR
+	ln -s ${SYNOPKG_PKGDEST}/var $CFEVAR
+
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks from /usr/local/CFE
+	rm -f $CFESHR
+	rm -f $CFEVAR
+
+	# Remove the view directory
+	rmdir $CFEDIR
+
+	exit 0
+}
+
+preupgrade ()
+{
+	touch $UPGRADELOCK
+
+	exit 0
+}
+
+postupgrade ()
+{
+	rm -f $UPGRADELOCK
+
+	exit 0
+}
