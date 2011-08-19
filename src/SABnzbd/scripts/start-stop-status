@@ -35,8 +35,8 @@ SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Files
 SABCNF=$SABETC/config.ini
+SABPID=$SABVAR/sabnzbd-*.pid
 SABLOG=$SABVAR/SABnzbd-spk.log
-SABOLDCNF=$SABVAR/config.ini.old
 SABINFO=/var/packages/SABnzbd/INFO
 
 start_daemon ()
@@ -52,11 +52,8 @@ start_daemon ()
 	# Update port in INFO file
 	sed -i "s/^adminport.*$/adminport=\"$SABPORT\"/g" $SABINFO
 
-	# Save config for later use
-	cp $SABCNF $SABOLDCNF
-
 	# Start SABnzbd
-	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SABEXE -f $SABCNF -d >> $SABLOG 2>&1"
+	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SABEXE -f $SABCNF --pid $SABVAR -d >> $SABLOG 2>&1"
 
 	# Install the application in the main interface.
 	if [ -d $SYNO3APP ]
@@ -76,29 +73,12 @@ stop_daemon ()
 	then
 		rm -f $SYNO3APP/SABnzbd
 	fi
-
-	# Retrieve values from previous configuration file as it may have changed
-	SABPORT=`$PAREXE misc port $SABOLDCNF`
-	SABHOST=`$PAREXE misc host $SABOLDCNF`
-
-	# Retrieve values from current configuration file for changes that don't need a restart to take effect
-	SABUSR=`$PAREXE misc username $SABCNF`
-	SABPWD=`$PAREXE misc password $SABCNF`
-	SABAPIKEY=`$PAREXE misc api_key $SABCNF`
-
-	# Correct invalid values
-	if [ "$SABHOST" = "0.0.0.0" ]; then
-		SABHOST="localhost"
-	fi
-	if [ "$SABAPIKEY" = "" ]; then
-		SABAPIKEY=`$PAREXE misc api_key $SABCNF`
-	fi
-
+	
 	# Kill daemon
-	if [ "$SABUSR" = "" -a "$SABPWD" = "" ]; then
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&apikey=$SABAPIKEY'"
+	if [ -f $SABPID ]; then
+		kill `cat $SABPID`
 	else
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&ma_username=$SABUSR&ma_password=$SABPWD&apikey=$SABAPIKEY'"
+		exit 1
 	fi
 	sleep 1
 
@@ -111,31 +91,6 @@ stop_daemon ()
 		sleep 1
 	done
 
-	# If we fail, try with new config file as user may have restarted SABnzbd manually
-	SABPORT=`$PAREXE misc port $SABCNF`
-	SABHOST=`$PAREXE misc host $SABCNF`
-
-	# Correct invalid values
-	if [ "$SABHOST" = "0.0.0.0" ]; then
-		SABHOST="localhost"
-	fi
-
-	# Kill daemon
-	if [ "$SABUSR" = "" -a "$SABPWD" = "" ]; then
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&apikey=$SABAPIKEY'"
-	else
-		$SUEXE $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&ma_username=$SABUSR&ma_password=$SABPWD&apikey=$SABAPIKEY'"
-	fi
-	sleep 1
-
-	# Wait until SABnzbd is really dead (may take some time)
-	counter=20
-	while [ $counter -gt 0 ] 
-	do
-		daemon_status || exit 0
-		let counter=counter-1
-		sleep 1
-	done
 	exit 1	
 }
 
