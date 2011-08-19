@@ -216,6 +216,10 @@ spk-clean:
 	@cd $(ROOT)/include/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_INCS), $(notdir $(wildcard $(ROOT)/include/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing includes in DEL_INCS... "
 	@cd $(ROOT)/include/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_INCS), $(notdir $(wildcard $(ROOT)/include/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing shares not in KEPT_SHRS... "
+	@cd $(ROOT)/share/ > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_SHRS), $(notdir $(wildcard $(ROOT)/share/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
+	@echo -n "Removing shares in DEL_SHRS... "
+	@cd $(ROOT)/share/ > /dev/null 2>&1 && rm -rf $(filter $(DEL_SHRS), $(notdir $(wildcard $(ROOT)/share/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 	@echo -n "Removing folders not in KEPT_FOLDERS... "
 	@cd $(ROOT) > /dev/null 2>&1 && rm -rf $(filter-out $(KEPT_FOLDERS), $(notdir $(wildcard $(ROOT)/*))) > /dev/null 2>&1 && echo " ok" || echo " failed!"
 
