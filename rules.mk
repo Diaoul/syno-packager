@@ -18,19 +18,25 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+#######
+# All #
+#######
+#
+all: out check-arch $(COMPILE_DEPS) $(INSTALL_PKG)
+	@echo "$(if $(strip $^),done,Run \"make help\" to get help info)."
+
+
 #################
 # Optware rules #
 #################
 #
 include optware.mk
 
+
 ##################
 # Standard rules #
 ##################
 #
-all: out check-arch $(COMPILE_DEPS) $(INSTALL_PKG)
-	@echo "$(if $(strip $^),done,Run \"make help\" to get help info)."
-
 $(ARCHS): out
 	@echo "Making SPK $(INSTALL_PKG) version $(SPK_VERSION) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE))..."
 	@mkdir -p out/logs
