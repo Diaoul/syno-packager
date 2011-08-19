@@ -1,0 +1,12 @@
+{
+  ".url": {
+    "fr.diaoul.transmission": {
+      "title": "Transmission",
+      "desc": "A Fast and Easy BitTorrent Client",
+      "icon": "images/icon_{0}.png",
+      "type": "url",
+      "url": "3rdparty/transmission/index.cgi",
+      "allUsers": false
+    }
+  }
+}

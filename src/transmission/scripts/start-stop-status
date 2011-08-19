@@ -22,125 +22,93 @@ TRDIR=/usr/local/transmission
 TRVAR=$TRDIR/var
 TRLIB=$TRDIR/lib
 TRETC=$TRDIR/etc
-TRUSR=$TRETC/users
+TRSHR=$TRDIR/share
 TREXE=$TRDIR/bin/transmission-daemon
 SUEXE=/bin/su
+PSEXE=/usr/local/bin/ps
+TRUSR=transmission
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
+# Files
+TRCNF=$TRETC/settings.json
+TRPID=$TRVAR/transmission.pid
+TRLOG=$TRVAR/transmission-spk.log
 
 start_daemon ()
 {
-	# Retrieve the userlist from arguments or from file
-	if [ $# -gt 0 ]; then
-		ulist=$@
-	else
-		ulist=`cat $TRUSR | sed 's/^\(\w\+\):.*$/\1/'`
-	fi
+	# Log
+	echo `date`" : Starting transmission daemon..." >> $TRLOG
 
-	# Check for users
-	if [ -z $ulist ]; then
-		echo "Run transmission-adduser to add Transmission usage priviliges to at least one user."
-		return 1
-	fi
+	# Start transmission
+	$SUEXE $TRUSR -s /bin/sh -c "TRANSMISSION_WEB_HOME=$TRSHR/transmission/web/ LD_LIBRARY_PATH=$TRLIB $TREXE -g $TRETC -x $TRPID >> $TRLOG 2>&1"
 
-	# Loop over users
-	for u in $ulist
-	do
-		echo -ne "\tuser $u..."
-		$SUEXE $u -s /bin/sh -c "LD_LIBRARY_PATH=$TRLIB $TREXE -x $TRVAR/$u.pid"
-		sleep 1
-		echo " Done"
-	done
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/transmission
+		ln -s $TRSHR/3rdparty $SYNO3APP/transmission
+	fi
 }
 
 stop_daemon ()
 {
-	# Retrieve the userlist from arguments or from file
-	if [ $# -gt 0 ]; then
-		ulist=$@
-	else
-		ulist=`cat $TRUSR | sed 's/^\(\w\+\):.*$/\1/'`
+	# Log
+	echo `date`" : Stoping transmission daemon..." >> $TRLOG
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/transmission ]
+	then
+		rm -f $SYNO3APP/transmission
 	fi
 
-	# Check for users
-	if [ -z $ulist ]; then
-		echo "Run transmission-adduser to add Transmission usage priviliges to at least one user."
-		return 1
+	# Kill daemon
+	if [ -f $TRPID ]; then
+		kill `cat $TRPID`
+		rm -f $TRPID
+		echo " ok"
+	else
+		echo " error : Can't find PID file!"
+		killall transmission-daemon
 	fi
-	
-	# Kill daemon for each users
-	for u in $ulist
-	do
-		echo -ne "\tuser $u..."
-		if [ -f $TRVAR/$u.pid ]; then
-			kill `cat $TRVAR/$u.pid`
-			echo " Done"
-		else
-			echo " Error : Can't find PID file !"
-		fi
-		sleep 1
-	done
+	sleep 1
 
 	# Wait until transmission is really dead (may take some time).
-	if [ $# -eq 0 ]; then
-		counter=20
-		while [ $counter -gt 0 ] 
-		do
-			daemon_status || break
-			let counter=counter-1
-			sleep 1
-		done
-	fi
-}
-
-reload_daemon ()
-{
-	for u in $ulist
+	counter=20
+	while [ $counter -gt 0 ] 
 	do
-		echo -ne "\tuser $u..."
-		if [ -f $TRVAR/$u.pid ]; then
-			kill -s HUP `cat $TRVAR/$u.pid`
-			echo " Done"
-		else
-			echo " Error : Can't find PID file !"
-		fi
+		daemon_status || exit 0
+		let counter=counter-1
 		sleep 1
 	done
+
+	exit 1
 }
 
 daemon_status ()
 {
-	[ "`ps aux | grep transmission-daemon | grep -v grep`" != "" ]
+	[ "`$SUEXE $TRUSR -s /bin/sh -c \"$PSEXE x | grep transmission-daemon | grep -v grep\"`" != "" ]
 }
 
 
 case $1 in
 	start)
-		shift
-		if daemon_status && [ $# == 0 ]; then
-			echo "Transmission daemon already running !"
+		if daemon_status; then
+			echo "Transmission daemon already running!"
 			exit 0
 		else
-			echo "Starting Transmission daemon for..."
-			start_daemon $@
+			echo "Starting transmission daemon..."
+			start_daemon
 			exit $?
 		fi
 		;;
 	stop)
-		echo "Stopping Transmission daemon for..."
-		shift
-		stop_daemon $@
+		echo -n "Stopping transmission daemon..."
+		stop_daemon
 		exit 0
 		;;
 	restart)
-		shift
-		stop_daemon $@
-		start_daemon $@
-		exit $?
-		;;
-	reload)
-		if daemon_status; then
-			reload_daemon
-		fi
+		stop_daemon
+		start_daemon
 		exit $?
 		;;
 	status)
@@ -153,7 +121,7 @@ case $1 in
 		fi
 		;;
 	log)
-		echo "No logs"
+		echo $TRLOG
 		exit 0
 		;;
 	*)

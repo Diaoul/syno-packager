@@ -302,11 +302,11 @@ $(STD_PKGS_CONFIGURE:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precom
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
-			--build=i686-pc-linux \
+			--build=i686-pc-linux --enable-lightweight \
 			--disable-gtk --disable-nls \
 			--enable-static --enable-daemon \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
-			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)"
 	touch $@
 
 # For each package to be installed, create a out/<arch>/<pkg>/syno.install.

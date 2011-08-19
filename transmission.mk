@@ -1,5 +1,4 @@
-#!/usr/bin/perl -w
-# Copyright 2010 Antoine Bertin
+# Copyright 2010-2011 Antoine Bertin
 # <diaoulael [ignore this] at users.sourceforge period net>
 #
 # This file is part of syno-packager.
@@ -17,45 +16,36 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-use strict;
-use warnings;
-use CGI;
-use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
-
-# Const
-my $SYAUTH = "/usr/syno/synoman/webman/modules/authenticate.cgi|";
-
-# CGI
-my $q = CGI->new;
-
-# Controller
-if (&isAuthed()) {
-	print $q->redirect("http://".$ENV{SERVER_NAME}.":9100");
-} else {
-	print $q->header;
-	print $q->start_html("Transmission - Authentication required");
-	print $q->h4("Please connect to DSM to continue...");
-	print $q->end_html;
-}
-
-
-
-
-
-#################
-# Subs are here #
-#################
+####################
+# Import variables #
+####################
 #
-# Check for user's authentication
-sub isAuthed {
-	my $user;
-	if (open(IN,$SYAUTH)) {
-		$user=<IN>;
-		chop($user);
-		close(IN);
-	}
-	if (!$user) {
-		return 0;
-	}
-	return 1;
-}
+include variables.mk
+
+
+#######################
+# Light Package Rules #
+#    transmission     #
+#######################
+#
+# Package and dependencies definition
+INSTALL_PKG=transmission
+INSTALL_DEPS=openssl libevent zlib curl
+
+# Cleanup
+KEPT_BINS=transmission-%
+DEL_BINS=
+KEPT_LIBS=%
+DEL_LIBS=%.a %.la %.sh pkgconfig engines
+KEPT_INCS=
+DEL_INCS=
+KEPT_SHRS=3rdparty transmission
+DEL_SHRS= man%
+KEPT_FOLDERS=bin lib share
+
+
+################
+# Import rules #
+################
+#
+include rules.mk
