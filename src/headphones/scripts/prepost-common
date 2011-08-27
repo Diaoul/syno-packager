@@ -1,0 +1,106 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+UPGRADELOCK=/tmp/headphones.upgrade.lock
+
+preinst ()
+{
+	# Check if Python is installed
+	if [ ! -d /usr/local/Python ]; then
+		echo "Python SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
+	# Check if toolbox is installed
+	if [ ! -d /usr/local/toolbox ]; then
+		echo "toolbox SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
+	# Check if SABnzbd is installed
+	if [ ! -d /usr/local/SABnzbd ]; then
+		echo "SABnzbd SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
+	exit 0
+}
+
+postinst ()
+{
+	# Create the view directory
+	mkdir -p /usr/local/headphones
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/headphones /usr/local/headphones/headphones
+	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/headphones/var
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/headphones/share
+
+	# Restore the config file if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		mv /tmp/config.ini ${SYNOPKG_PKGDEST}/headphones/
+		mv /tmp/headphones.db ${SYNOPKG_PKGDEST}/headphones/
+	fi
+
+	# Correct the files ownership
+	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
+
+	# Correct the files permission
+	chmod 770 /usr/local/headphones/var/*
+
+	exit 0
+}
+
+preuninst ()
+{
+	# Save the config file if we're upgrading
+	if [ -f $UPGRADELOCK ]; then
+		cp ${SYNOPKG_PKGDEST}/headphones/config.ini /tmp/
+		cp ${SYNOPKG_PKGDEST}/headphones/headphones.db /tmp/
+	fi
+
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks
+	rm -f /usr/local/headphones/headphones
+	rm -f /usr/local/headphones/var
+	rm -f /usr/local/headphones/share
+
+	# Remove the view directory
+	rmdir /usr/local/headphones
+
+	exit 0
+}
+
+preupgrade ()
+{
+	touch $UPGRADELOCK
+
+	exit 0
+}
+
+postupgrade ()
+{
+	rm -f $UPGRADELOCK
+
+	exit 0
+}

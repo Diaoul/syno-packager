@@ -1,0 +1,131 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+HPDIR=/usr/local/headphones
+HPVAR=$HPDIR/var
+HPSHR=$HPDIR/share
+SABLIB=/usr/local/SABnzbd/lib
+HPEXE=$HPDIR/headphones/Headphones.py
+PYEXE=/usr/local/bin/python
+PAREXE=/usr/local/bin/cfg.parser
+NICEXE=/usr/local/bin/nice
+IONEXE=/usr/local/bin/ionice
+PSEXE=/usr/local/bin/ps
+SUEXE=/bin/su
+SABEXEUSR=sabnzbduser
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
+
+# Files
+HPCNF=$HPDIR/headphones/config.ini
+HPPID=$HPVAR/headphones.pid
+HPLOG=$HPVAR/headphones-spk.log
+HPINFO=/var/packages/headphones/INFO
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting Headphones..." >> $HPLOG
+
+	# Start Headphones
+	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $HPEXE --pidfile $HPPID -d >> $HPLOG 2>&1"
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/headphones
+		ln -s $HPSHR/3rdparty $SYNO3APP/headphones
+	fi
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping Headphones..." >> $HPLOG
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/headphones ]
+	then
+		rm -f $SYNO3APP/headphones
+	fi
+
+	# Kill daemon
+	if [ -f $HPPID ]; then
+		kill `cat $HPPID`
+	else
+		exit 1
+	fi
+	sleep 1
+
+	# Wait until Headphones is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || exit 0
+		let counter=counter-1
+		sleep 1
+	done
+
+	exit 1
+}
+
+daemon_status ()
+{
+	[ "`$SUEXE $SABEXEUSR -s /bin/sh -c \"$PSEXE x | grep Headphones.py | grep -v grep\"`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "Headphones daemon already running !"
+			exit 0
+		else
+			echo "Starting Headphones daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping Headphones daemon..."
+		stop_daemon
+		exit $?
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $HPLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

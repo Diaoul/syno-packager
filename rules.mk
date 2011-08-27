@@ -682,6 +682,12 @@ $(OUT_DIR)/SickBeard/syno.install:
 	mv $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard/.git*
 
+$(OUT_DIR)/headphones/syno.install:
+	@echo $@ ----\> $^
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/rembo10/headphones.git
+	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/headphones/.git*
+
 $(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/SABnzbd.unpack
 	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd
