@@ -1,5 +1,6 @@
-# Tool chains #
-ext/precompiled/gcc*.tgz
+# Toolchains #
+ext/precompiled/*.tgz
+ext/precompiled/*/gcc*.tgz
 
 # Binaries and libraries #
 ext/packages/*.tgz
