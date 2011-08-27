@@ -347,6 +347,17 @@ $(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/syn
 
 $(META_PKGS) $(NONSTD_MODULE_PKGS):%: $(OUT_DIR)/%/syno.install
 
+# Create symlinks to toolchains. Use DSM_VERSION to determine which directory pick
+toolchains:
+	@cd $(EXT_DIR)/precompiled && rm -f *.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_ppc.tgz powerpc.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_ppc824x.tgz ppc824x.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_88f5281.tgz 88f5281.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_ppc853x.tgz ppc853x.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_ppc854x.tgz ppc854x.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_pineview.tgz x86.tgz
+	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_88f628x.tgz 88f628x.tgz
+
 
 ##############################
 # User defined, non-standard #

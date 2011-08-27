@@ -21,6 +21,7 @@
 # Default arch
 SPARCH?=88f628x
 ARCH?=$(SPARCH)
+DSM_VERSION=3.0
 
 # Directories
 ifeq ($(ARCH),all)
