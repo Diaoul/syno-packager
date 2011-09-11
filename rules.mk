@@ -57,7 +57,7 @@ endif
 	@-sed -i -e "s|%SPK_IMAGE%|$(shell base64 -w 0 src/$(SPK_NAME)/target/app/images/icon_72.png)|g" $(SPK_DIR)/INFO
 	@mkdir -p $(SPK_DIR)/target
 	@cp -R src/$(SPK_NAME)/target/* $(SPK_DIR)/target
-	@cp -R $(OUT_DIR)/root/* $(SPK_DIR)/target
+	@-cp -R $(OUT_DIR)/root/* $(SPK_DIR)/target
 	@cd $(SPK_DIR)/target && tar czf ../package.tgz *
 	@cd $(SPK_DIR) && tar cf $(CUR_DIR)/out/$(SPK_FILENAME) INFO package.tgz scripts
 
