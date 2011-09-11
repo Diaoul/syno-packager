@@ -18,10 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+# Import configuration
+-include config.mk
+
 # Default arch
-SPARCH?=88f628x
 ARCH?=$(SPARCH)
-DSM_VERSION=3.0
 
 # Directories
 ifeq ($(ARCH),all)
@@ -32,6 +33,7 @@ endif
 CUR_DIR:=$(PWD)
 EXT_DIR=$(CUR_DIR)/ext
 PKG_DIR=$(EXT_DIR)/packages
+SPK_DIR=$(OUT_DIR)/spk
 TEMPROOT=$(CUR_DIR)/$(OUT_DIR)/temproot
 ROOT=$(CUR_DIR)/$(OUT_DIR)/root
 
@@ -98,9 +100,11 @@ SYNO_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(T
 CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)/include/linux/config.h
 
 # Packaging variables
+PKG_VERSION=$(shell echo $(notdir $(wildcard $(PKG_DIR)/$(INSTALL_PKG)*$($(shell echo $(INSTALL_PKG) | tr [:lower:] [:upper:])_VERSION)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(shell echo $(notdir $(wildcard $(PKG_DIR)/$(INSTALL_PKG)*$($(shell echo $(INSTALL_PKG) | tr [:lower:] [:upper:])_VERSION)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
-SPK_ARCH="$(ARCH)"
+SPK_ARCH=$(ARCH)
+SPK_TEST_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 5)
+SPK_FILENAME=$(SPK_NAME)-$(PKG_VERSION)-$(SPK_VERSION)-$(SPK_ARCH).spk
 
 # Build types
 BUILD_TYPES=release build zip spk-clean spk-perms spk-strip

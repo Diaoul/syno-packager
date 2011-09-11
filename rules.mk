@@ -22,8 +22,8 @@
 # All #
 #######
 #
-all: out check-arch $(COMPILE_DEPS) $(INSTALL_PKG)
-	@echo "$(if $(strip $^),done,Run \"make help\" to get help info)."
+all: out $(COMPILE_DEPS) $(INSTALL_PKG)
+	@echo "Compiled $(INSTALL_PKG) v$(PKG_VERSION) for $(ARCH) and its dependencies"
 
 
 #################
@@ -44,16 +44,25 @@ $(ARCHS): out
 	echo "SPK $(INSTALL_PKG) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE)) built successfully" >> out/logs/status.log || \
 	echo "Error while building SPK $(INSTALL_PKG) for arch $@ type $(patsubst bt-%,%,$(BUILD_TYPE)), check logs for more details" >> out/logs/status.log &
 
-spk:
-	@echo -n "Making SPK $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
+out/$(SPK_FILENAME): all
 ifeq ($(RM_SUDO),yes)
 	@sudo rm -rf $(OUT_DIR)/spk
 else
 	@rm -rf $(OUT_DIR)/spk
 endif
-	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) CP_SUDO=$(CP_SUDO) RM_SUDO=$(RM_SUDO) TAR_SUDO=$(TAR_SUDO) \
-	./src/buildspk.sh
-	@echo " ok"
+	@mkdir -p $(SPK_DIR)/scripts
+	@cp src/$(SPK_NAME)/scripts/* $(SPK_DIR)/scripts
+	@cp src/$(SPK_NAME)/INFO $(SPK_DIR)/
+	@sed -i -e "s/%SPK_ARCH%/$(SPK_TEST_ARCH)/g" -e "s/%PKG_VERSION%/$(PKG_VERSION)/g" -e "s/%SPK_VERSION%/$(SPK_VERSION)/g" $(SPK_DIR)/INFO
+	@-sed -i -e "s|%SPK_IMAGE%|$(shell base64 -w 0 src/$(SPK_NAME)/target/app/images/icon_72.png)|g" $(SPK_DIR)/INFO
+	@mkdir -p $(SPK_DIR)/target
+	@cp -R src/$(SPK_NAME)/target/* $(SPK_DIR)/target
+	@cp -R $(OUT_DIR)/root/* $(SPK_DIR)/target
+	@cd $(SPK_DIR)/target && tar czf ../package.tgz *
+	@cd $(SPK_DIR) && tar cf $(CUR_DIR)/out/$(SPK_FILENAME) INFO package.tgz scripts
+
+spk: out/$(SPK_FILENAME)
+	@echo "Created SPK v$(SPK_VERSION) of $(INSTALL_PKG) v$(PKG_VERSION) for $(ARCH): $(SPK_FILENAME)"
 
 $(MODELS):
 	$(MAKE) -f $(TOP_MK) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
@@ -71,17 +80,6 @@ hash:
 	done
 out:
 	@mkdir -p out
-
-check-arch:
-	@echo -n "Checking whether architecture $(ARCH) is supported..."
-ifeq ($(ARCH),all)
-	@echo " yes (all archs)"
-	@echo "$(OUT_DIR)"
-else
-	@grep ^$(ARCH): arch-target.map > /dev/null || (echo " no" && exit 1)
-	@echo " yes"
-	@echo "Target: $(TARGET)"
-endif
 
 archs:
 	@echo "List of supported architectures and models:"
@@ -138,6 +136,7 @@ tests: gcc-version
 	@echo "	RM_SUDO				$(RM_SUDO)"
 	@echo "	TAR_SUDO			$(TAR_SUDO)"
 	@echo "	DEBIAN_ARCH			$(DEBIAN_ARCH)"
+	@echo "$(shell echo $(notdir $(wildcard $(PKG_DIR)/$(INSTALL_PKG)*$($(shell echo $(INSTALL_PKG) | tr [:lower:] [:upper:])_VERSION)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')"
 
 help:
 	@echo "usage: make [ARCH=] COMMAND"
@@ -178,9 +177,9 @@ gcc-version: precomp/$(ARCH)
 # Cleaning rules
 clean:
 ifeq ($(RM_SUDO),yes)
-	sudo rm -rf $(OUT_DIR)
+	@sudo rm -rf $(OUT_DIR)
 else
-	rm -rf $(OUT_DIR)
+	@rm -rf $(OUT_DIR)
 endif
 
 cleanstatus:
@@ -188,13 +187,13 @@ cleanstatus:
 
 cleanall:
 ifeq ($(RM_SUDO),yes)
-	sudo rm -rf out
+	@sudo rm -rf out
 else
-	rm -rf out
+	@rm -rf out
 endif
 
 realclean: cleanall
-	rm -rf precomp
+	@rm -rf precomp
 
 # Zip rules
 $(ARCHS:%=%.zip): out
@@ -237,7 +236,7 @@ spk-strip:
 	done || echo "Nothing to strip"
 
 # Pre defined build types
-bt-release: clean all spk-clean spk-perms spk-strip spk
+bt-release: clean all spk-clean spk-strip spk
 bt-buildall: all
 bt-spk-cleanall: spk-clean
 bt-spk-permsall: spk-perms
@@ -253,100 +252,6 @@ $(BUILD_TYPES:%=%all):%all: imp-% $(ARCHS)
 
 release: bt-release
 
-
-##################
-# Specific rules #
-##################
-#
-# Unpack the toolchain, remove conflicting flex and correct buggy config.h on some arch.
-precomp/$(ARCH):
-	grep ^$(ARCH) arch-target.map
-	mkdir -p precomp/$(ARCH)
-	tar xf ext/precompiled/$(ARCH).* -C precomp/$(ARCH)
-	rm -f $(CC_PATH)/bin/flex
-	rm -f $(CC_PATH)/bin/flex++
-	if [ -f $(SYNO_H) ] && [ -f $(CONFIG_H) ] && cat $(SYNO_H) | grep -q '[0-9]define[0-9]'; then \
-		sed -i -e "s|^#include|//#include|" $(CONFIG_H); \
-		echo "config.h has been corrected"; \
-	else \
-		echo "config.h is not buggy"; \
-	fi
-	if [ -f $(SYNO_H) ] && cat $(SYNO_H) | grep -q '[0-9]define[0-9]'; then \
-		find $@ -type f -name '*.h' -exec sed -i -e "s|^#include <linux/syno.h>$$|//#include <linux/syno.h>|" {} \;; \
-		echo "References to syno.h has been deleted"; \
-	else \
-		echo "syno.h is not buggy"; \
-	fi
-	find $@ -type f -name '*.la' -exec sed -i -e "s|^libdir=.*$$|libdir='$(CUR_DIR)/$(CC_PATH)/$(TARGET)/lib'|" {} \;
-
-# For each package, create a out/<arch>/<pkg>.unpack target that unpacks the
-# source to out/<arch>/<versionned pkg> and creates a symlink called
-# out/<arch>/<pkg> that points to it.
-$(AVAILABLE_PKGS:%=$(OUT_DIR)/%.unpack):$(OUT_DIR)/%.unpack:
-	@echo $@ ----\> $^
-	@mkdir -p $(OUT_DIR)
-	@if [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* ]; then \
-		tar mxf $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* -C $(OUT_DIR); \
-	elif [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip ]; then \
-		unzip $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip -d $(OUT_DIR); \
-	fi
-	@cd $(OUT_DIR)/ && [ -e $* ] || ln -s $*-* $*
-	touch $@
-
-# For each standard package, create a out/<arch>/<pkg>/syno.config target.
-# This target <prefix>/syno.config depends on <prefix>.unpack and
-# precomp/<arch> and handles calling the standard ./configure script with the
-# right options.
-$(STD_PKGS_CONFIGURE:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	cd $(dir $@) && \
-	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
-	./configure --host=$(TARGET) --target=$(TARGET) \
-			--build=i686-pc-linux --enable-lightweight \
-			--disable-gtk --disable-nls \
-			--enable-static --enable-daemon \
-			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
-			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)"
-	touch $@
-
-# For each package to be installed, create a out/<arch>/<pkg>/syno.install.
-# This target <prefix>/syno.install depends on <prefix>/syno.config and
-# handles calling make and make install to install the package in "root".
-$(STD_PKGS_INSTALL:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
-	@echo $@ ----\> $^
-	make -C $(dir $@)
-	make -C $(dir $@) install
-	touch $@
-
-# For each package, create a easy to use target called <pkg> that depends
-# on out/<arch>/<package>/syno.install
-$(AVAILABLE_PKGS): %: $(OUT_DIR)/%/syno.install
-	@echo $@ ----\> $^
-
-# For each package, create a easy to use <pkg>.clean target that deletes
-# all out/<arch>/<pkg>*
-$(AVAILABLE_PKGS:%=%.clean):
-	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
-
-# Perl module installation
-$(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH)
-	cd $* && \
-	perl Makefile.PL INSTALL_BASE=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	make -C $(dir $@)
-	make -C $(dir $@) install
-
-# Python modules installation
-$(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/syno.config %.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
-	cd $* && \
-	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
-	LDFLAGS="$(LDFLAGS)" \
-	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
-
-$(META_PKGS) $(NONSTD_MODULE_PKGS):%: $(OUT_DIR)/%/syno.install
-
 # Create symlinks to toolchains. Use DSM_VERSION to determine which directory pick
 toolchains:
 	@cd $(EXT_DIR)/precompiled && rm -f *.tgz
@@ -358,6 +263,110 @@ toolchains:
 	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_pineview.tgz x86.tgz
 	@cd $(EXT_DIR)/precompiled && ln -s $(DSM_VERSION)/*_88f628x.tgz 88f628x.tgz
 
+setup: config.mk
+
+config.mk:
+	@echo "# Used by the publish rule to upload SPK to a package-server (https://github.com/Diaoul/syno-package-server)" > config.mk
+	@echo "PKG_SRV_UPLOAD_URL=" >> config.mk
+	@echo "PKG_SRV_HTTP_USER=" >> config.mk
+	@echo "PKG_SRV_HTTP_PASSWORD=" >> config.mk
+	@echo "# Default architecture" >> config.mk
+	@echo "SPARCH?=88f628x" >> config.mk
+	@echo "# Toolchain version used" >> config.mk
+	@echo "DSM_VERSION=3.0" >> config.mk
+
+publish: spk
+	@curl -F "spk=@$(CUR_DIR)/out/$(SPK_FILENAME);type=application/x-extension-spk" -F "upload=OK" -F "beta=$(SPK_BETA)" -F "changelog=$(SPK_CHANGELOG)" -u $(PKG_SRV_HTTP_USER):$(PKG_SRV_HTTP_PASSWORD) $(PKG_SRV_UPLOAD_URL) > /dev/null 2>&1
+	@echo "Published SPK v$(SPK_VERSION) of $(INSTALL_PKG) v$(PKG_VERSION) for $(ARCH): $(SPK_FILENAME)"
+
+
+##################
+# Specific rules #
+##################
+#
+# Unpack the toolchain, remove conflicting flex and correct buggy config.h on some arch.
+precomp/$(ARCH):
+	@mkdir -p precomp/$(ARCH)
+	@tar xf ext/precompiled/$(ARCH).* -C precomp/$(ARCH)
+	@rm -f $(CC_PATH)/bin/flex
+	@rm -f $(CC_PATH)/bin/flex++
+	@if [ -f $(SYNO_H) ] && [ -f $(CONFIG_H) ] && cat $(SYNO_H) | grep -q '[0-9]define[0-9]'; then \
+		sed -i -e "s|^#include|//#include|" $(CONFIG_H); \
+		echo "config.h has been corrected"; \
+	else \
+		echo "config.h is not buggy"; \
+	fi
+	@if [ -f $(SYNO_H) ] && cat $(SYNO_H) | grep -q '[0-9]define[0-9]'; then \
+		find $@ -type f -name '*.h' -exec sed -i -e "s|^#include <linux/syno.h>$$|//#include <linux/syno.h>|" {} \;; \
+		echo "References to syno.h has been deleted"; \
+	else \
+		echo "syno.h is not buggy"; \
+	fi
+	@find $@ -type f -name '*.la' -exec sed -i -e "s|^libdir=.*$$|libdir='$(CUR_DIR)/$(CC_PATH)/$(TARGET)/lib'|" {} \;
+
+# For each package, create a out/<arch>/<pkg>.unpack target that unpacks the
+# source to out/<arch>/<versionned pkg> and creates a symlink called
+# out/<arch>/<pkg> that points to it.
+$(AVAILABLE_PKGS:%=$(OUT_DIR)/%.unpack):$(OUT_DIR)/%.unpack:
+	@mkdir -p $(OUT_DIR)
+	@if [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* ]; then \
+		tar mxf $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.t* -C $(OUT_DIR); \
+	elif [ -f $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip ]; then \
+		unzip $(PKG_DIR)/$**$($(shell echo $* | tr [:lower:] [:upper:])_VERSION)*.zip -d $(OUT_DIR); \
+	fi
+	@cd $(OUT_DIR)/ && [ -e $* ] || ln -s $*-* $*
+	@touch $@
+
+# For each standard package, create a out/<arch>/<pkg>/syno.config target.
+# This target <prefix>/syno.config depends on <prefix>.unpack and
+# precomp/<arch> and handles calling the standard ./configure script with the
+# right options.
+$(STD_PKGS_CONFIGURE:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux --enable-lightweight \
+			--disable-gtk --disable-nls \
+			--enable-static --enable-daemon \
+			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)"
+	@touch $@
+
+# For each package to be installed, create a out/<arch>/<pkg>/syno.install.
+# This target <prefix>/syno.install depends on <prefix>/syno.config and
+# handles calling make and make install to install the package in "root".
+$(STD_PKGS_INSTALL:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
+	make -C $(dir $@)
+	make -C $(dir $@) install
+	@touch $@
+
+# For each package, create a easy to use target called <pkg> that depends
+# on out/<arch>/<package>/syno.install
+$(AVAILABLE_PKGS):%: $(OUT_DIR)/%/syno.install
+
+# For each package, create a easy to use <pkg>.clean target that deletes
+# all out/<arch>/<pkg>*
+$(AVAILABLE_PKGS:%=%.clean):
+	@rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
+
+# Perl module installation
+$(PERL_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: %.unpack precomp/$(ARCH)
+	cd $* && \
+	perl Makefile.PL INSTALL_BASE=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	make -C $(dir $@)
+	make -C $(dir $@) install
+
+# Python modules installation
+$(PYTHON_PKGS:%=$(OUT_DIR)/%/syno.install):%/syno.install: $(OUT_DIR)/Python/syno.config %.unpack precomp/$(ARCH)
+	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
+	cd $* && \
+	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
+	LDFLAGS="$(LDFLAGS)" \
+	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
+	@touch $@
+
+$(META_PKGS) $(NONSTD_MODULE_PKGS):%: $(OUT_DIR)/%/syno.install
+
 
 ##############################
 # User defined, non-standard #
@@ -367,11 +376,11 @@ toolchains:
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 
 $(OUT_DIR)/dos2unix/syno.config: $(OUT_DIR)/dos2unix.unpack precomp/$(ARCH)
+	@touch $@
 
 $(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/protobuf-c/syno.install $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/libgcrypt/syno.config: $(OUT_DIR)/libgpg-error/syno.install $(OUT_DIR)/libgcrypt.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	ac_cv_sys_symbol_underscore=no \
@@ -380,10 +389,9 @@ $(OUT_DIR)/libgcrypt/syno.config: $(OUT_DIR)/libgpg-error/syno.install $(OUT_DIR
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			--with-gpg-error-prefix=$(if $(filter libgpg-error, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libxslt/syno.config: $(OUT_DIR)/libgcrypt/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -391,10 +399,9 @@ $(OUT_DIR)/libxslt/syno.config: $(OUT_DIR)/libgcrypt/syno.install $(OUT_DIR)/lib
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			--with-libxml-prefix=$(if $(filter libxml2, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" LIBGCRYPT_CONFIG="$(if $(filter libgcrypt, $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/libgcrypt-config"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libpar2/syno.config: $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libpar2.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/libpar2-0.2-bugfixes.patch
 	patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/libpar2-0.2-cancel.patch
 	cd $(dir $@) && \
@@ -403,50 +410,45 @@ $(OUT_DIR)/libpar2/syno.config: $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/lib
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libsigc++/syno.config: $(OUT_DIR)/libsigc++.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libxml2/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/libxml2.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/nzbget/syno.config: $(OUT_DIR)/ncurses/syno.terminfo $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libsigc++/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libpar2/syno.install $(OUT_DIR)/nzbgetweb/syno.install $(OUT_DIR)/nzbget.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" CXXFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/coreutils/syno.config: $(OUT_DIR)/coreutils.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),1.0.0)
 	@echo "Using OpenSSL version 1.0.0"
 	cd $(OUT_DIR)/openssl && \
@@ -463,18 +465,16 @@ ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),0.9.8)
 			zlib-dynamic shared threads \
 			"syno:$(TARGET)-gcc:$(CFLAGS) -DTERMIO -fomit-frame-pointer -Wall::-D_REENTRANT::-ldl $(LDFLAGS):BN_LLONG DES_RISC1::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 endif
-	touch $(OUT_DIR)/openssl/syno.config
+	@touch $@
 
 $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(OUT_DIR)/zlib && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	CHOST=$(TARGET) \
 	./configure --prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) --static --shared
-	touch $(OUT_DIR)/zlib/syno.config
+	@touch $@
 
 $(OUT_DIR)/curl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/curl.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(OUT_DIR)/curl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -483,10 +483,9 @@ $(OUT_DIR)/curl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl/syn
 			--with-random=/dev/urandom \
 			--with-ssl --with-zlib \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $(OUT_DIR)/curl/syno.config
+	@touch $@
 
 $(OUT_DIR)/polarssl/syno.config: $(OUT_DIR)/polarssl.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	@sed -i "1i\CC=$(TARGET)-gcc" $(OUT_DIR)/polarssl/Makefile $(OUT_DIR)/polarssl/library/Makefile
 	@sed -i "/cd programs/d" $(OUT_DIR)/polarssl/Makefile
 	@sed -i "/cd tests/d" $(OUT_DIR)/polarssl/Makefile
@@ -498,10 +497,9 @@ $(OUT_DIR)/polarssl/syno.config: $(OUT_DIR)/polarssl.unpack precomp/$(ARCH)
 	@sed -i "/all: static/ c\all: static shared" $(OUT_DIR)/polarssl/library/Makefile
 	@sed -i "s/^\tar /\t$(TARGET)-ar /" $(OUT_DIR)/polarssl/library/Makefile
 	@sed -i "s/^\tranlib /\t$(TARGET)-ranlib /" $(OUT_DIR)/polarssl/library/Makefile
-	touch $(OUT_DIR)/polarssl/syno.config
+	@touch $@
 
 $(OUT_DIR)/protobuf-c/syno.config: $(OUT_DIR)/protobuf-c.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(OUT_DIR)/protobuf-c && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -509,20 +507,18 @@ $(OUT_DIR)/protobuf-c/syno.config: $(OUT_DIR)/protobuf-c.unpack precomp/$(ARCH)
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			--disable-protoc \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $(OUT_DIR)/protobuf-c/syno.config
+	@touch $@
 
 $(OUT_DIR)/Python/host.install: $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libffi/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --with-zlib=/usr/include
 	make -C $(dir $@)
 	mv $(dir $@)python $(dir $@)hostpython
 	mv $(dir $@)Parser/pgen $(dir $@)Parser/hostpgen
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
-	@echo $@ ----\> $^
 	patch -d $(dir $@) -p1 -i $(EXT_DIR)/others/Python-2.7.2-xcompile.patch
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -531,20 +527,18 @@ $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
 			--prefix="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" \
 			--with-cxx-main=$(TARGET)-g++ \
 			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/util-linux/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/util-linux.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" \
 			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -552,30 +546,27 @@ $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			--with-shared --enable-rpath --enable-overwrite \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/readline/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libffi/syno.config: $(OUT_DIR)/libffi.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/tcl/syno.config: $(OUT_DIR)/tcl.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@)unix && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	ac_cv_func_strtod=yes \
@@ -585,10 +576,9 @@ $(OUT_DIR)/tcl/syno.config: $(OUT_DIR)/tcl.unpack precomp/$(ARCH)
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	@sed -i "s|\./\$${TCL_EXE}|\$$\{TCL_EXE\}|" $(OUT_DIR)/tcl/unix/Makefile
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/psmisc/syno.config: $(OUT_DIR)/psmisc.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
@@ -597,10 +587,9 @@ $(OUT_DIR)/psmisc/syno.config: $(OUT_DIR)/psmisc.unpack precomp/$(ARCH)
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/git/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/git.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	ac_cv_c_c99_format=yes \
@@ -610,14 +599,12 @@ $(OUT_DIR)/git/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/git.unpack p
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/sysvinit/syno.config: $(OUT_DIR)/sysvinit.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/par2cmdline/syno.config: $(OUT_DIR)/par2cmdline.unpack precomp/$(ARCH) gcc-version
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -627,10 +614,9 @@ $(OUT_DIR)/par2cmdline/syno.config: $(OUT_DIR)/par2cmdline.unpack precomp/$(ARCH
 	@echo $(shell if [ $(GCC_MAJOR) -eq 4 ]; then \
 			patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/par2cmdline-0.4-gcc4.patch; \
 		fi)
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/shadow/syno.config: $(OUT_DIR)/shadow.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	ac_cv_func_setpgrp_void=yes \
@@ -638,12 +624,11 @@ $(OUT_DIR)/shadow/syno.config: $(OUT_DIR)/shadow.unpack precomp/$(ARCH)
 			--build=i686-pc-linux \
 			--prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/busybox/syno.config: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	make -C $(dir $@) ARCH=$(ARCH) CROSS_COMPILE=$(TARGET)- CONFIG_PREFIX=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" allnoconfig menuconfig
-	touch $@
+	@touch $@
 
 
 ##############################
@@ -652,12 +637,10 @@ $(OUT_DIR)/busybox/syno.config: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
 ##############################
 #
 $(OUT_DIR)/dos2unix/syno.install: $(OUT_DIR)/dos2unix/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@) CC="$(TARGET)-gcc" CPP="$(TARGET)-g++" STRIP="$(TARGET)-strip" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" prefix="" all install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/lxml/syno.install: $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/lxml.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
 	cd $(dir $@) && \
 	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
@@ -668,46 +651,41 @@ $(OUT_DIR)/lxml/syno.install: $(OUT_DIR)/libxml2/syno.install $(OUT_DIR)/libxslt
 	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
 	LDFLAGS="$(LDFLAGS)" \
 	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/pip/syno.install: $(OUT_DIR)/setuptools/syno.install $(OUT_DIR)/Python/syno.config $(OUT_DIR)/pip.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/
 	cd $(dir $@) && \
 	PYTHONPATH="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/site-packages/:$(CUR_DIR)/$*" \
 	LDFLAGS="$(LDFLAGS)" \
 	../Python/hostpython setup.py install --prefix $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	sed -e "s|%CORRECT_PATH%|$(CUR_DIR)/$(OUT_DIR)|g" $(EXT_DIR)/others/pip-1.0.1-syno.tmpl.patch | patch -d $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin -p1
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/CouchPotato/syno.install:
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/RuudBurger/CouchPotato.git
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/CouchPotato/.git*
 
 $(OUT_DIR)/SickBeard/syno.install:
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/midgetspy/Sick-Beard.git
 	mv $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/Sick-Beard $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SickBeard/.git*
 
 $(OUT_DIR)/headphones/syno.install:
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	cd $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) && git clone https://github.com/rembo10/headphones.git
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/headphones/.git*
 
 $(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/SABnzbd.unpack
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd
 	cp -Rf $(OUT_DIR)/SABnzbd/* $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/SABnzbd
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@) distclean
+	patch -d $(dir $@) -p0 -i $(EXT_DIR)/others/Python-2.7.2-synology.patch
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -723,80 +701,69 @@ $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
 			CROSS_COMPILE=$(TARGET)- CROSS_COMPILE_TARGET=yes
 	rm -rf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/test
 	rm -f $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/lib/python2.7/config/*.a
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/bzip2/syno.install: $(OUT_DIR)/bzip2.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	make -C $(dir $@) libbz2.a bzip2 bzip2recover CC="$(TARGET)-gcc" AR="$(TARGET)-ar" RANLIB="$(TARGET)-ranlib" LDFLAGS="$(LDFLAGS)"
 	make -C $(dir $@) install PREFIX="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))"
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/sysvinit/syno.install: $(OUT_DIR)/sysvinit/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@) SBIN="killall5" CC="$(TARGET)-gcc" LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
 	cp $(dir $@)src/killall5 $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/tcl/syno.install: $(OUT_DIR)/tcl/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@)unix
 	make -C $(dir $@)unix install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/coreutils/syno.install: $(OUT_DIR)/coreutils/syno.config
-	@echo $@ ----\> $^
 	cd $(dir $@)man && for f in *.x; \
 	do \
 		touch `basename $$f .x`.1; \
 	done;
 	make -C $(dir $@)
 	make -C $(dir $@) install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/util-linux/syno.install: $(OUT_DIR)/util-linux/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@)schedutils ionice
 	make -C $(dir $@)sys-utils renice
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
 	cp $(dir $@)schedutils/ionice $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
 	cp $(dir $@)sys-utils/renice $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/psmisc/syno.install: $(OUT_DIR)/psmisc/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 	make -C $(dir $@) install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libxml2/syno.install: $(OUT_DIR)/libxml2/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/openssl/syno.install: $(OUT_DIR)/openssl/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) install
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/var/
 	cp $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/ssl/openssl.cnf $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/var/
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libsigc++/syno.install: $(OUT_DIR)/libsigc++/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/libpar2/syno.install: $(OUT_DIR)/libpar2/syno.config
-	@echo $@ ----\> $^
 	make -C $(dir $@) PKG_CONFIG_PATH=$(PKG_CONFIG_PATH)
 	make -C $(dir $@) install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/procps/syno.install: $(OUT_DIR)/procps.unpack precomp/$(ARCH) $(OUT_DIR)/ncurses/syno.install
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/ $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/usr/share/man/man1/
 	make -C $(dir $@) SHARED=0 CC=$(TARGET)-gcc CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		DESTDIR=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
@@ -806,41 +773,36 @@ $(OUT_DIR)/procps/syno.install: $(OUT_DIR)/procps.unpack precomp/$(ARCH) $(OUT_D
 		sbin="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/" \
 		bin="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin/" \
 		SKIP="\$$(MANFILES)" install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/nzbgetweb/syno.install: $(OUT_DIR)/nzbgetweb.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
 	cp -R $(dir $@) $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/busybox/syno.install: $(OUT_DIR)/busybox/syno.config
-	@echo $@ ----\> $^
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/bin
 	make -C $(dir $@) ARCH=$(ARCH) CROSS_COMPILE=$(TARGET)- CONFIG_PREFIX=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" all install
-	touch $@
+	@touch $@
 
 
 ##############
 # Meta Rules #
 ##############
 $(OUT_DIR)/busybox/syno.lightusermanagement: $(OUT_DIR)/busybox.unpack precomp/$(ARCH)
-	@echo $@ ----\> $^
 	cp $(EXT_DIR)/others/busybox-lightusermanagement.config $(OUT_DIR)/busybox/.config
 	make -C $(dir $@) ARCH=$(ARCH) CROSS_COMPILE=$(TARGET)- CONFIG_PREFIX=$(ROOT) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" all install
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/ncurses/syno.terminfo: $(OUT_DIR)/ncurses/syno.install
-	@echo $@ ----\> $^
 	mkdir -p $(ROOT)/share/terminfo
 	cp -R $(TEMPROOT)/share/terminfo $(ROOT)/share/terminfo
-	touch $@
+	@touch $@
 
 $(OUT_DIR)/toolbox/syno.install: $(OUT_DIR)/Config-Crontab/syno.install $(OUT_DIR)/Config-IniFiles/syno.install $(OUT_DIR)/util-linux/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/procps/syno.install $(OUT_DIR)/par2cmdline/syno.install $(OUT_DIR)/busybox/syno.lightusermanagement
 
 $(OUT_DIR)/debian-chroot/syno.install:
-	@echo $@ ----\> $^
 	mkdir -p $(dir $@)
 	mkdir -p $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget
 	sudo debootstrap --foreign --arch $(DEBIAN_ARCH) squeeze $(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))/chroottarget "http://ftp.debian.org/debian"
-	touch $@
+	@touch $@

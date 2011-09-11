@@ -23,28 +23,6 @@
 include variables.mk
 
 
-#######################
-# Light Package Rules #
-#         dev         #
-#######################
-#
-# Package and dependencies definition
-INSTALL_PKG=umurmur
-INSTALL_DEPS=libconfig
-
-# Cleanup
-KEPT_BINS=python nice renice ionice ps par2% busybox adduser deluser
-DEL_BINS=
-KEPT_LIBS=libcrypto.so% libssl.so% libz.so% libsqlite3.so% python% engines
-DEL_LIBS=%.a %.la %.sh pkgconfig
-KEPT_INCS=python%
-DEL_INCS=
-KEPT_FOLDERS=bin lib SABnzbd include
-
-# Optimisation flags
-OFLAGS=-O2
-
-
 ################
 # Import rules #
 ################
