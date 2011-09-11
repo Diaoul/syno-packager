@@ -29,15 +29,6 @@ D2UU2MEXE=$D2UBIN/unix2mac
 
 preinst ()
 {
-	# Find the CPU architecture
-	synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
-	arch=`echo $synoinfo | cut -d_ -f2`
-
-	# Check if the architecture is supported
-	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
-		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
-		exit 1
-	fi
 	exit 0
 }
 
@@ -89,10 +80,10 @@ postuninst ()
 
 preupgrade ()
 {
-	exit 1
+	exit 0
 }
 
 postupgrade ()
 {
-	exit 1
+	exit 0
 }

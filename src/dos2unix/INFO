@@ -1,0 +1,8 @@
+package="dos2unix"
+displayname="dos2unix"
+version="%PKG_VERSION%-%SPK_VERSION%"
+description="DOS/MAC to UNIX text file format converter"
+description_fre="Convertisseur de format de fichiers texte DOS/MAC/UNIX"
+maintainer="diaoulael@gmail.com"
+arch="%SPK_ARCH%"
+package_icon="%SPK_IMAGE%"
