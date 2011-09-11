@@ -102,8 +102,12 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 # Packaging variables
 PKG_VERSION=$(shell echo $(notdir $(wildcard $(PKG_DIR)/$(INSTALL_PKG)*$($(shell echo $(INSTALL_PKG) | tr [:lower:] [:upper:])_VERSION)*.*)) | perl -p -e 's/$(REGEX)/\3/; s/^\s*$$/tip/')
 SPK_NAME=$(INSTALL_PKG)
-SPK_ARCH=$(ARCH)
-SPK_TEST_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 5)
+SPK_ARCH=all
+ifeq ($(ARCH),all)
+	SPK_TEST_ARCH=noarch
+else
+	SPK_TEST_ARCH=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 5)
+endif
 SPK_FILENAME=$(SPK_NAME)-$(PKG_VERSION)-$(SPK_VERSION)-$(SPK_ARCH).spk
 
 # Build types
