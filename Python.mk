@@ -44,7 +44,7 @@ KEPT_FOLDERS=bin lib include
 
 # Version overriding
 PYTHON_VERSION=2.7.2
-OPENSSL_VERSION=0.9.8
+OPENSSL_VERSION=1.0.0
 
 # Optimisation flags
 #OFLAGS=-O3
