@@ -1,6 +1,0 @@
-SPK_DESC="Python (used by other SPKs)"
-SPK_MAINT="diaoulael@gmail.com"
-SPK_RELOADUI="yes"
-SPK_URL=""
-SPK_PORT=
-META_VERSION="2.0"

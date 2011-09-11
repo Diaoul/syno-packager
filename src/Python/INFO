@@ -1,0 +1,8 @@
+package="Python"
+displayname="Python"
+version="%PKG_VERSION%-%SPK_VERSION%"
+description="Python is a programming language that lets you work more quickly and integrate your systems more effectively. You can learn to use Python and see almost immediate gains in productivity and lower maintenance costs"
+description_fre="Python est un langage de programmation qui vous permet de travailler plus rapidement et d'intégrer vos systèmes plus efficacement. Apprenez à utiliser Python et constatez quasi immédiatement un gain de productivité et un faible coût de maintenance"
+maintainer="diaoulael@gmail.com"
+arch="%SPK_ARCH%"
+package_icon="%SPK_IMAGE%"
