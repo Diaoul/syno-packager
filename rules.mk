@@ -526,7 +526,7 @@ $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
 			--build=i686-pc-linux \
 			--prefix="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" \
 			--with-cxx-main=$(TARGET)-g++ \
-			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+			CFLAGS="-DPATH_MAX=4096 $(CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	@touch $@
 
 $(OUT_DIR)/util-linux/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/util-linux.unpack precomp/$(ARCH)
@@ -692,7 +692,7 @@ $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
 			--build=i686-pc-linux \
 			--prefix="$(if $(filter $(patsubst $(OUT_DIR)/%/syno.install,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT))" \
 			--with-cxx-main=$(TARGET)-g++ \
-			CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+			CFLAGS="-DPATH_MAX=4096 $(CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	make -C $(dir $@) HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
 			BLDSHARED="$(TARGET)-gcc -shared" CROSS_COMPILE=$(TARGET)- \
 			CROSS_COMPILE_TARGET=yes
