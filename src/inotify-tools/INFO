@@ -1,0 +1,8 @@
+package="inotify-tools"
+displayname="inotify-tools"
+version="%PKG_VERSION%-%SPK_VERSION%"
+description="Command-line interface to inotify"
+description_fre="Interface ligne de commande pour inotify"
+maintainer="diaoulael@gmail.com"
+arch="%SPK_ARCH%"
+package_icon="%SPK_IMAGE%"
