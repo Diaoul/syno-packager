@@ -42,25 +42,12 @@ start_daemon ()
 
 	# Start uMurmur
 	$SUEXE $UMUSR -s /bin/sh -c "LD_LIBRARY_PATH=$UMLIB $UMEXE -r -c $UMCNF -p $UMPID >> $UMLOG 2>&1"
-
-	# Install the application in the main interface.
-	if [ -d $SYNO3APP ]
-	then
-		rm -f $SYNO3APP/umurmur
-		ln -s $UMSHR/3rdparty $SYNO3APP/umurmur
-	fi
 }
 
 stop_daemon ()
 {
 	# Log
 	echo `date`" : Stoping uMurmur..." >> $UMLOG
-
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/umurmur ]
-	then
-		rm -f $SYNO3APP/umurmur
-	fi
 
 	# Kill daemon
 	if [ -f $UMPID ]; then

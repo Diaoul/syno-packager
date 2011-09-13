@@ -1,0 +1,8 @@
+package="umurmur"
+displayname="uMurmur"
+version="%PKG_VERSION%-%SPK_VERSION%"
+description="Minimalistic Murmur (Mumble server)"
+maintainer="diaoulael@gmail.com"
+arch="%SPK_ARCH%"
+dsmuidir="app"
+package_icon="%SPK_IMAGE%"

@@ -43,6 +43,7 @@ KEPT_FOLDERS=bin lib var
 
 # Version overriding
 OPENSSL_VERSION=0.9.8
+UMURMUR_VERSION=0.2.7
 
 # Optimisation flags
 OFLAGS=-O0
