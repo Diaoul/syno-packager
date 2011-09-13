@@ -19,9 +19,9 @@
 
 # Common
 CFEDIR=/usr/local/CFE
-CFESHR=$CFEDIR/share
+CFEAPP=$CFEDIR/app
 CFEVAR=$CFEDIR/var
-SYNO3APP=/usr/syno/synoman/webman/3rdparty
+CFEENABLED=/var/packages/CFE/enabled
 
 # Files
 CFELOG=$CFEVAR/CFE-spk.log
@@ -30,30 +30,17 @@ start_daemon ()
 {
 	# Log
 	echo `date`" : Starting CFE..." >> $CFELOG
-
-	# Install the application in the main interface.
-	if [ -d $SYNO3APP ]
-	then
-		rm -f $SYNO3APP/CFE
-		ln -s $CFESHR/3rdparty $SYNO3APP/CFE
-	fi
 }
 
 stop_daemon ()
 {
 	# Log
 	echo `date`" : Stoping CFE..." >> $CFELOG
-
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/CFE ]
-	then
-		rm -f $SYNO3APP/CFE
-	fi
 }
 
 daemon_status ()
 {
-	[ -h $SYNO3APP/CFE ]
+	[ -f $CFEENABLED ]
 }
 
 case $1 in

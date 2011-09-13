@@ -4,7 +4,7 @@
 			"title": "CFE",
 			"desc": "Config File Editor",
 			"icon": "images/icon_{0}.png",
-			"type": "legacy",
+			"type": "url",
 			"url": "3rdparty/CFE/index.cgi",
 			"allUsers": false
 		}

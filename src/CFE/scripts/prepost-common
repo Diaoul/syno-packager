@@ -19,7 +19,7 @@
 
 # Common
 CFEDIR=/usr/local/CFE
-CFESHR=$CFEDIR/share
+CFEAPP=$CFEDIR/app
 CFEVAR=$CFEDIR/var
 UPGRADELOCK=/tmp/CFE.upgrade.lock
 
@@ -34,7 +34,7 @@ postinst ()
 	mkdir -p $CFEDIR
 
 	# Create symlinks to the installation ditectory
-	ln -s ${SYNOPKG_PKGDEST}/share $CFESHR
+	ln -s ${SYNOPKG_PKGDEST}/app $CFEAPP
 	ln -s ${SYNOPKG_PKGDEST}/var $CFEVAR
 
 	# Correct the files ownership
@@ -51,7 +51,7 @@ preuninst ()
 postuninst ()
 {
 	# Remove symlinks from /usr/local/CFE
-	rm -f $CFESHR
+	rm -f $CFEAPP
 	rm -f $CFEVAR
 
 	# Remove the view directory
