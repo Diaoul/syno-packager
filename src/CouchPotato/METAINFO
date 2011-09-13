@@ -1,6 +1,0 @@
-SPK_DESC="Automatic NZB and torrent downloader for movies"
-SPK_MAINT="diaoulael@gmail.com"
-SPK_RELOADUI="yes"
-SPK_URL=""
-SPK_PORT=9400
-META_VERSION="1.2"
