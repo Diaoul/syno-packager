@@ -50,7 +50,7 @@ postinst ()
 	# Create symlinks to the installation ditectory
 	ln -s ${SYNOPKG_PKGDEST}/headphones /usr/local/headphones/headphones
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/headphones/var
-	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/headphones/share
+	ln -s ${SYNOPKG_PKGDEST}/app /usr/local/headphones/app
 
 	# Restore the config file if we're upgrading
 	if [ -f $UPGRADELOCK ]; then
@@ -83,7 +83,7 @@ postuninst ()
 	# Remove symlinks
 	rm -f /usr/local/headphones/headphones
 	rm -f /usr/local/headphones/var
-	rm -f /usr/local/headphones/share
+	rm -f /usr/local/headphones/app
 
 	# Remove the view directory
 	rmdir /usr/local/headphones

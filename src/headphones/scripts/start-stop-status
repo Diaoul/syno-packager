@@ -20,7 +20,6 @@
 # Common
 HPDIR=/usr/local/headphones
 HPVAR=$HPDIR/var
-HPSHR=$HPDIR/share
 SABLIB=/usr/local/SABnzbd/lib
 HPEXE=$HPDIR/headphones/Headphones.py
 PYEXE=/usr/local/bin/python
@@ -30,7 +29,6 @@ IONEXE=/usr/local/bin/ionice
 PSEXE=/usr/local/bin/ps
 SUEXE=/bin/su
 SABEXEUSR=sabnzbduser
-SYNO3APP=/usr/syno/synoman/webman/3rdparty
 
 # Files
 HPCNF=$HPDIR/headphones/config.ini
@@ -45,25 +43,12 @@ start_daemon ()
 
 	# Start Headphones
 	$SUEXE $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $HPEXE --pidfile $HPPID -d >> $HPLOG 2>&1"
-
-	# Install the application in the main interface.
-	if [ -d $SYNO3APP ]
-	then
-		rm -f $SYNO3APP/headphones
-		ln -s $HPSHR/3rdparty $SYNO3APP/headphones
-	fi
 }
 
 stop_daemon ()
 {
 	# Log
 	echo `date`" : Stoping Headphones..." >> $HPLOG
-
-	# Remove the application from the main interface if it was previously added.
-	if [ -h $SYNO3APP/headphones ]
-	then
-		rm -f $SYNO3APP/headphones
-	fi
 
 	# Kill daemon
 	if [ -f $HPPID ]; then
