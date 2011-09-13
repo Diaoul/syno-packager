@@ -4,6 +4,6 @@ diff -u a/pip b/pip
 @@ -1,4 +1,4 @@
 -#!%CORRECT_PATH%/Python/hostpython
 +#!/usr/bin/env python
- # EASY-INSTALL-ENTRY-SCRIPT: 'pip==1.0.1','console_scripts','pip'
- __requires__ = 'pip==1.0.1'
+ # EASY-INSTALL-ENTRY-SCRIPT: 'pip==1.0.2','console_scripts','pip'
+ __requires__ = 'pip==1.0.2'
  import sys

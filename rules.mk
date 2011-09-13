@@ -455,7 +455,7 @@ ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),1.0.0)
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./Configure --prefix=$(if $(filter $(patsubst $(OUT_DIR)/%/syno.config,%,$@), $(INSTALL_DEPS) $(INSTALL_PKG)),$(ROOT),$(TEMPROOT)) \
 			zlib-dynamic shared threads \
-			"syno:$(TARGET)-gcc:-O3 $(CFLAGS)::(unknown)::-ldl $(LDFLAGS):BN_LLONG:::::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
+			"syno:$(TARGET)-gcc:-O3 $(CFLAGS)::-D_REENTRANT::-ldl $(LDFLAGS):BN_LLONG:::::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 endif
 ifeq ($(shell echo $(OPENSSL_VERSION) | sed 's/[a-zA-Z]//g'),0.9.8)
 	@echo "Using OpenSSL version 0.9.8"
