@@ -1,3 +1,9 @@
+DEPRECATION NOTICE
+==================
+This repository is deprecated and has been replaced with https://github.com/SynoCommunity/spksrc
+
+
+
 Syno-Packager
 =============
 
